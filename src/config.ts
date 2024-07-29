@@ -1,4 +1,6 @@
 import type { Site, SocialObjects } from "./types";
+import type { GiscusProps } from "@giscus/react";
+
 
 export const SITE: Site = {
   website: "https://skyminer.top/", // replace this with your deployed domain
@@ -147,3 +149,17 @@ export const SOCIALS: SocialObjects = [
     active: false,
   },
 ];
+
+
+export const GISCUS: GiscusProps = {
+  repo: "Skyminers/paper-blog",
+  repoId: "R_kgDOMcflrg",
+  category: "Announcements",
+  categoryId: "DIC_kwDOMcflrs4ChQlD",
+  mapping: "pathname",
+  reactionsEnabled: "1",
+  emitMetadata: "0",
+  inputPosition: "top",
+  lang: "zh-CN",
+  loading: "lazy",
+};
