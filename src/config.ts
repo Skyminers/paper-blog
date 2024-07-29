@@ -1,11 +1,11 @@
 import type { Site, SocialObjects } from "./types";
 
 export const SITE: Site = {
-  website: "https://skyminers.github.io/", // replace this with your deployed domain
+  website: "https://skyminer.top/", // replace this with your deployed domain
   author: "Sky_miner",
   profile: "https://satnaing.dev/",
   desc: "A minimal, responsive and SEO-friendly Astro blog theme.",
-  title: "Sky Blog",
+  title: "SkyBlog",
   ogImage: "astropaper-og.jpg",
   lightAndDarkMode: true,
   postPerIndex: 4,
