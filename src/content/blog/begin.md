@@ -1,16 +1,14 @@
 ---
-author: Sat Naing
-pubDatetime: 2022-09-23T15:22:00Z
-modDatetime: 2023-12-21T09:12:47.400Z
-title: Adding new posts in AstroPaper theme
+author: Sky_miner
+pubDatetime: 2024-07-30T00:03:00+08:00
+# modDatetime: 2023-12-21T09:12:47.400Z
+title: 起点
 slug: adding-new-posts-in-astropaper-theme
 featured: true
 draft: false
 tags:
   - docs
-description:
-  Some rules & recommendations for creating or adding new posts using AstroPaper
-  theme.
+description: 第一篇博客，记录了博客中全部的样式和功能。起点，也是一个新的开始。
 ---
 
 Here are some rules/recommendations, tips & ticks for creating new posts in AstroPaper blog theme.
