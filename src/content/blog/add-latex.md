@@ -1,7 +1,7 @@
 ---
 author: Sky_miner
 pubDatetime: 2024-07-30T14:37:41+08:00
-# modDatetime:
+modDatetime: 2024-07-30T21:01:00+08:00
 title: 为博客添加 LaTeX 支持
 slug: add-latex
 featured: false
@@ -11,7 +11,7 @@ tags:
 description: 记录了为 Astro 添加 LaTeX 支持的过程
 ---
 
-参考了：[alexafazio](https://alexafazio.dev/blog/render-latex-in-astro/)这篇文章。
+参考了：[alexafazio](https://alexafazio.dev/blog/render-latex-in-astro/) 这篇文章。
 
 显示效果实例：
 
@@ -58,3 +58,16 @@ export default defineConfig({
 ## Done!
 
 配置完成，现在可以使用 LaTeX 了！
+
+## 补充
+
+目前的配置下多行公式在 Dark Mode 下可能会显示成灰色，很难认清，可以在`/layouts/PostDetails`文件中的`<style>`标签中添加如下代码：
+
+```css
+/* This is fixing the dim color of katex in dark mode */
+.prose {
+  color: var(--color-text-base);
+}
+```
+
+可以使多行公式的颜色正常显示，方便阅读。
