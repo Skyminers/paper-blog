@@ -447,6 +447,66 @@ public:
 };
 ```
 
+---
+
+## 208. [实现 Trie](https://leetcode.cn/problems/implement-trie-prefix-tree/description/?envType=study-plan-v2&envId=top-100-liked)
+
+字面意思，实现一个字典树。写了一个动态的。
+
+```cpp
+struct Node {
+    Node* ch[26];
+    bool flag;
+};
+class Trie {
+    Node *rt;
+public:
+    Trie() {
+        rt = newNode();
+    }
+
+    Node* newNode() {
+        Node *ret = new Node();
+        for (int i = 0;i < 26; ++ i) {
+            ret->ch[i] = NULL;
+        }
+        ret->flag = false;
+        return ret;
+    }
+
+    void insert(string word) {
+        Node *nw = rt;
+        for (int i = 0;i < word.size(); ++ i) {
+            if (nw->ch[word[i] - 'a'] == NULL) {
+                nw->ch[word[i] - 'a'] = newNode();
+            }
+            nw = nw->ch[word[i] - 'a'];
+        }
+        nw->flag = true;
+    }
+
+    bool search(string word) {
+        Node *nw = rt;
+        for (int i = 0;i < word.size(); ++ i) {
+            if (nw->ch[word[i] - 'a'] == NULL) return false;
+            nw = nw->ch[word[i] - 'a'];
+        }
+        return nw->flag;
+    }
+
+    bool startsWith(string prefix) {
+        Node *nw = rt;
+        for (int i = 0;i < prefix.size(); ++ i) {
+            if (nw->ch[prefix[i] - 'a'] == NULL) return false;
+            nw = nw->ch[prefix[i] - 'a'];
+        }
+        return true;
+    }
+};
+```
+
+---
+
 ## 230. [二叉搜索树中第K小的元素](https://leetcode.cn/problems/kth-smallest-element-in-a-bst/description/?envType=study-plan-v2&envId=top-100-liked)
 
 用记忆话的方式计算节点的size，然后在二叉树上二分
