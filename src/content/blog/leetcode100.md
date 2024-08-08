@@ -1,7 +1,7 @@
 ---
 author: Sky_miner
 pubDatetime: 2024-08-01T20:41:09+08:00
-modDatetime: 2024-08-05T01:03:09+08:00
+modDatetime: 2024-08-08T11:41:00+08:00
 title: LeetCode 热题 100 一句话题解集(更新中)
 featured: true
 draft: false
@@ -32,6 +32,47 @@ public:
             mp[nums[i]] = i;
         }
         return {};
+    }
+};
+```
+
+---
+
+## 4. [寻找两个正序数组的中位数](https://leetcode.cn/problems/median-of-two-sorted-arrays/description/?envType=study-plan-v2&envId=top-100-liked)
+
+如果可以同时在两个数组中应用合理的划分，将两个数组各分为两部分再合并起来。合并起来的数组中，左半部分数字个数为 $\frac{(n + m + 1)}{2}$ 时，中位数是左半部分的最大值和右半部分的最小值的平均值（如果是奇数的话就直接是左半部分的最大值）。可以通过二分的方式枚举第一个数组的分割点，这样的话第二个数组的分割点就可以直接计算确定。
+
+```cpp
+#define inf 0x3fffffff
+class Solution {
+public:
+    double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
+        if (nums1.size() > nums2.size()) swap(nums1, nums2);
+        int n = nums1.size(), m = nums2.size();
+        int l = 0, r = n;
+        int split1 = 0, split2 = 0;
+        int lmax = -1, rmin = -1;
+        while (l <= r) {
+            split1 = l+r >> 1;
+            split2 = (n + m + 1) / 2 - split1;
+            int a = split1-1 < 0 ? -inf : nums1[split1-1];
+            int b = split1 >= n ? inf : nums1[split1];
+            int x = split2-1 < 0 ? -inf : nums2[split2-1];
+            int y = split2 >= m ? inf : nums2[split2];
+
+            if (a <= y && x <= b) {
+                lmax = max(a, x);
+                rmin = min(b, y);
+                break;
+            }
+            if (a > y) {
+                r = split1 - 1;
+            } else {
+                l = split1 + 1;
+            }
+        }
+        if ((n + m) % 2 == 0) return (double)(lmax + rmin) / 2;
+        else return lmax;
     }
 };
 ```
@@ -100,6 +141,46 @@ public:
 
 ---
 
+## 33. [搜索旋转排序数组](https://leetcode.cn/problems/search-in-rotated-sorted-array/description/?envType=study-plan-v2&envId=top-100-liked)
+
+通过二分确认分界点，然后进行分别二分查找即可。
+
+```cpp
+class Solution {
+public:
+    int binary_search(vector<int>& nums, int l, int r, int target) {
+        while(l <= r) {
+            int mid = l+r >> 1;
+            if (nums[mid] < target) l = mid+1;
+            else if (nums[mid] > target) r = mid-1;
+            else return mid;
+        }
+        return -1;
+    }
+    int search(vector<int>& nums, int target) {
+        int base = nums[0];
+
+        if (nums.size() == 1) return target == base ? 0 : -1;
+
+        int l = 1, r = nums.size() - 1, ans = 0;
+        while (l <= r) {
+            int mid = l+r >> 1;
+            if (nums[mid] > base) l = mid+1;
+            else {
+                r = mid-1;
+                ans = mid;
+            }
+        }
+        int x = binary_search(nums, 0, ans-1, target);
+        int y = binary_search(nums, ans, nums.size()-1, target);
+        if (x == -1 && y == -1) return -1;
+        return x == -1 ? y : x;
+    }
+};
+```
+
+---
+
 ## 42. [接雨水](https://leetcode.cn/problems/trapping-rain-water/?envType=study-plan-v2&envId=top-100-liked)
 
 可以看到，在从左向右移动的过程中，每次最高点更新时就会有一个新的接雨水的坑出现。所以循环两次，第一次从左向右，第二次从右向左，如果最高点有更新的话就是出现了新的水坑。
@@ -132,6 +213,54 @@ public:
             }
         }
         return ans;
+    }
+};
+```
+
+---
+
+## 41. [缺失的第一个正数](https://leetcode.cn/problems/first-missing-positive/description/?envType=study-plan-v2&envId=top-100-liked)
+
+利用原本的数组元素存储信息，每次遇到一个下标为 `i` 的数字 `num[i]` 时，通过不断的 `swap` 操作将 `num[i]` 放到正确的位置上，最后再遍历一次数组即可。
+
+```cpp
+class Solution {
+public:
+    int firstMissingPositive(vector<int>& nums) {
+        for (int i = 0; i < nums.size(); ++ i) {
+            while (nums[i] > 0 && nums[i] <= nums.size()) {
+                if (nums[i] == nums[nums[i]-1]) break;
+                swap(nums[i], nums[nums[i]-1]);
+            }
+        }
+        for (int i = 0; i < nums.size(); ++ i) {
+            if (nums[i] != i+1) return i+1;
+        }
+        return nums.size() + 1;
+    }
+};
+```
+
+---
+
+## 48. [旋转图像](https://leetcode.cn/problems/rotate-image/description/?envType=study-plan-v2&envId=top-100-liked)
+
+旋转会形成循环链路，通过坐标计算可以计算出四个点的旋转变换关系，然后直接交换即可。注意对于奇数的矩阵来说需要枚举中间行或列来接触到中间的循环节。
+
+```cpp
+class Solution {
+public:
+    void rotate(vector<vector<int>>& matrix) {
+        int n = matrix.size();
+        for (int i = 0; i < n>>1; ++ i) {
+            for (int j = 0; j < (n+1>>1); ++ j) {
+                int tmp = matrix[i][j];
+                matrix[i][j] = matrix[n-j-1][i];
+                matrix[n-j-1][i] = matrix[n-i-1][n-j-1];
+                matrix[n-i-1][n-j-1] = matrix[j][n-i-1];
+                matrix[j][n-i-1] = tmp;
+            }
+        }
     }
 };
 ```
@@ -224,6 +353,176 @@ public:
 
 ---
 
+## 73. [矩阵置零](https://leetcode.cn/problems/set-matrix-zeroes/description/?envType=study-plan-v2&envId=top-100-liked)
+
+将行或者列的置零信号保存到第 $0$ 行和第 $0$ 列，然后再开两个变量分别表示第 $0$ 行和第 $0$ 列是否需要置零。
+
+```cpp
+class Solution {
+public:
+    void setZeroes(vector<vector<int>>& matrix) {
+        bool line0 = false, col0 = false;
+        for (int i = 0; i < matrix[0].size(); ++ i) {
+            if (matrix[0][i] == 0) {
+                line0 = true;
+                break;
+            }
+        }
+        for (int i = 0; i < matrix.size(); ++ i) {
+            if (matrix[i][0] == 0) {
+                col0 = true;
+            }
+            for (int j = 0; j < matrix[i].size(); ++ j) {
+                if (matrix[i][j] == 0) {
+                    matrix[i][0] = matrix[0][j] = 0;
+                }
+            }
+        }
+        for (int i = 1; i < matrix[0].size(); ++ i) {
+            if (matrix[0][i] == 0) {
+                for (int j = 1; j < matrix.size(); ++ j) {
+                    matrix[j][i] = 0;
+                }
+            }
+        }
+        for (int i = 1; i < matrix.size(); ++ i) {
+            if (matrix[i][0] == 0) {
+                for (int j = 1; j < matrix[i].size(); ++ j) {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+        if (line0) for(int i = 0; i < matrix[0].size(); ++ i) matrix[0][i] = 0;
+        if (col0) for(int i = 0; i < matrix.size(); ++ i) matrix[i][0] = 0;
+    }
+};
+```
+
+---
+
+## 70. [爬楼梯](https://leetcode.cn/problems/climbing-stairs/description/?envType=study-plan-v2&envId=top-100-liked)
+
+记忆化搜索，斐波那契数列。
+
+```cpp
+class Solution {
+    int f[55];
+
+public:
+    Solution() {
+        memset(f, -1, sizeof f);
+        f[0] = 1;
+        f[1] = 1;
+    }
+    int climbStairs(int n) {
+        if (f[n] != -1) return f[n];
+        return f[n] = climbStairs(n-1) + climbStairs(n-2);
+    }
+};
+```
+
+---
+
+## 76. [最小覆盖子串](https://leetcode.cn/problems/minimum-window-substring/description/?envType=study-plan-v2&envId=top-100-liked)
+
+枚举右端点，左端点一定是一直向右移动的。
+
+```cpp
+class Solution {
+    int ws[52], nw[52], remain;
+    int convertChar2Id(char x) {
+        if ('a' <= x && x <= 'z') return x - 'a';
+        if ('A' <= x && x <= 'Z') return x - 'A' + 26;
+        return -1;
+    }
+public:
+    string minWindow(string s, string t) {
+        memset(ws, 0, sizeof ws);
+        memset(nw, 0, sizeof nw);
+        remain = 52;
+        int n = s.size(), m = t.size();
+        for (int i = 0; i < m; ++ i) {
+            ws[convertChar2Id(t[i])] += 1;
+        }
+        for (int i = 0; i < 52; ++ i) {
+            if (nw[i] >= ws[i]) -- remain;
+        }
+        int ans = n+1, ansl = -1, ansr = -1;
+        for (int r = 0,l = 0; r < n; ++ r) {
+            int charId = convertChar2Id(s[r]);
+            if (++ nw[charId] == ws[charId]) {
+                -- remain;
+            }
+            while(l < r) {
+                charId = convertChar2Id(s[l]);
+                if (nw[charId] > ws[charId]) {
+                    -- nw[charId];
+                    ++ l;
+                } else break;
+            }
+            if (remain == 0){
+                if (r-l+1 < ans) {
+                    ans = r-l+1;
+                    ansl = l;
+                    ansr = r;
+                }
+            }
+        }
+        if (ans == n+1) return "";
+        return s.substr(ansl, ansr-ansl+1);
+    }
+};
+```
+
+---
+
+## 79. [单词搜索](https://leetcode.cn/problems/word-search/description/?envType=study-plan-v2&envId=top-100-liked)
+
+直接搜索，记录当前位置匹配到了第几个元素，然后递归搜索即可。
+
+```cpp
+class Solution {
+    bool flag[12][12];
+    bool dfs(vector<vector<char>>& board, int u, int v, string word, int idx) {
+        static int dx[] = {0, 0, 1, -1};
+        static int dy[] = {1, -1, 0, 0};
+        if (flag[u][v]) return false;
+        flag[u][v] = true;
+        if (board[u][v] != word[idx]) {
+            flag[u][v] = false;
+            return false;
+        }
+
+        if (idx == word.size()-1) {
+            flag[u][v] = false;
+            return true;
+        }
+        for (int i = 0; i < 4; ++ i) {
+            int nx = u + dx[i];
+            int ny = v + dy[i];
+            if (nx < 0 || nx >= board.size() || ny < 0 || ny >= board[0].size()) continue;
+            if (dfs(board, nx, ny, word, idx+1)) {
+                flag[u][v] = false;
+                return true;
+            }
+        }
+        flag[u][v] = false;
+        return false;
+    }
+public:
+    bool exist(vector<vector<char>>& board, string word) {
+        for (int i = 0; i < board.size(); ++ i) {
+            for (int j = 0;j < board[i].size(); ++ j) {
+                if (dfs(board, i, j, word, 0)) return true;
+            }
+        }
+        return false;
+    }
+};
+```
+
+---
+
 ## 108. [将有序数组转换为二叉搜索树](https://leetcode.cn/problems/convert-sorted-array-to-binary-search-tree/description/?envType=study-plan-v2&envId=top-100-liked)
 
 通过 dfs 进行递归建树，每次取中间的数字作为根节点，然后递归建立左右子树。
@@ -272,6 +571,46 @@ public:
                 ans = max(ans, ret);
             }
         }
+        return ans;
+    }
+};
+```
+
+---
+
+## 131. [分割回文串](https://leetcode.cn/problems/palindrome-partitioning/?envType=study-plan-v2&envId=top-100-liked)
+
+搜索枚举即可：
+
+```cpp
+class Solution {
+    vector<string> res;
+    vector<vector<string>> ans;
+    bool check(string s) {
+        for (int i = 0; i < s.size() / 2; ++ i) {
+            if (s[i] != s[s.size()-i-1]) return false;
+        }
+        return true;
+    }
+    void dfs(int u, string s) {
+        if (u >= s.size()) {
+            ans.push_back(res);
+            return ;
+        }
+        for (int i = u;i < s.size(); ++ i) {
+            string str = s.substr(u, i - u + 1);
+            if (check(str)) {
+                res.push_back(str);
+                dfs(i+1, s);
+                res.pop_back();
+            }
+        }
+    }
+public:
+    vector<vector<string>> partition(string s) {
+        res.clear();
+        ans.clear();
+        dfs(0, s);
         return ans;
     }
 };
@@ -507,6 +846,35 @@ public:
 
 ---
 
+## 215. [数组中的第K个最大元素](https://leetcode.cn/problems/kth-largest-element-in-an-array/description/?envType=study-plan-v2&envId=top-100-liked)
+
+快速选择，用类似快拍的思想来做。每次找一个数字作为中间点，然后将所有小于等于该数字的放在左边，大于等于该数字的放在右边。然后找一个方向递归。
+
+```cpp
+class Solution {
+    int dfs(vector<int>& nums, int l, int r, int k) {
+        if (l == r) return nums[l];
+        int mid = nums[l];
+        int left = l - 1, right = r + 1;
+        while(left < right) {
+            do { ++ left; }while(nums[left] < mid);
+            do { -- right; }while(nums[right] > mid);
+            if (left < right) swap(nums[left], nums[right]);
+        }
+        if (r - right < k) {
+            k -= (r - right);
+            return dfs(nums, l, right, k);
+        }else return dfs(nums, right+1, r, k);
+    }
+public:
+    int findKthLargest(vector<int>& nums, int k) {
+        return dfs(nums, 0, nums.size()-1, k);
+    }
+};
+```
+
+---
+
 ## 230. [二叉搜索树中第K小的元素](https://leetcode.cn/problems/kth-smallest-element-in-a-bst/description/?envType=study-plan-v2&envId=top-100-liked)
 
 用记忆话的方式计算节点的size，然后在二叉树上二分
@@ -567,6 +935,29 @@ public:
 ```
 
 ---
+
+## 238. [除自身以外数组的乘积](https://leetcode.cn/problems/product-of-array-except-self/description/?envType=study-plan-v2&envId=top-100-liked)
+
+两次遍历，第一次遍历计算左边的乘积，第二次遍历计算右边的乘积。
+
+```cpp
+class Solution {
+public:
+    vector<int> productExceptSelf(vector<int>& nums) {
+        vector<int> ret(nums.size());
+        ret[0] = 1;
+        for (int i = 1; i < nums.size(); ++ i){
+            ret[i] = ret[i - 1] * nums[i-1];
+        }
+        int dotSum = nums.back();
+        for (int i = nums.size() - 2; i >= 0; -- i) {
+            ret[i] *= dotSum;
+            dotSum *= nums[i];
+        }
+        return ret;
+    }
+};
+```
 
 ---
 
@@ -697,6 +1088,29 @@ public:
                 }
             }
             if(k == 0) break;
+        }
+        return ans;
+    }
+};
+```
+
+---
+
+## 560. [和为 K 的子数组](https://leetcode.cn/problems/subarray-sum-equals-k/?envType=study-plan-v2&envId=top-100-liked)
+
+数组和就是前缀和相减，用 hashmap 维护某个前缀数值出现的次数即可。
+
+```cpp
+class Solution {
+public:
+    int subarraySum(vector<int>& nums, int k) {
+        unordered_map<int, int> hash; hash.clear();
+        int sum = 0, ans = 0;
+        hash[sum] = 1;
+        for (auto x: nums) {
+            sum += x;
+            ans += hash[sum - k];
+            hash[sum] += 1;
         }
         return ans;
     }
