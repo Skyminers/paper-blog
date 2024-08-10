@@ -1,7 +1,7 @@
 ---
 author: Sky_miner
 pubDatetime: 2024-08-01T20:41:09+08:00
-modDatetime: 2024-08-08T11:41:00+08:00
+modDatetime: 2024-08-10T17:29:00+08:00
 title: LeetCode 热题 100 一句话题解集(更新中)
 featured: true
 draft: false
@@ -131,6 +131,177 @@ public:
                     tmp.push_back(nums[j]);
                     tmp.push_back(nums[k]);
                     ans.push_back(tmp);
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+
+---
+
+## 19. [删除链表的倒数第 N 个结点](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/description/?envType=study-plan-v2&envId=top-100-liked)
+
+用一个数组把整个链表存了下来，说实话可以压缩到只存最后 n+1 个结点，但是这就需要再维护一个链表，有点懒。
+
+```cpp
+class Solution {
+public:
+    ListNode* removeNthFromEnd(ListNode* head, int n) {
+        vector<ListNode*> listnode;
+        while(head != nullptr) {
+            listnode.push_back(head);
+            head = head->next;
+        }
+        int idx = listnode.size() - n;
+        if (listnode.size() == 1) {
+            assert(idx == 0);
+            return nullptr;
+        }
+        if (idx == 0) {
+            delete listnode[idx];
+            return listnode[idx+1];
+        }
+        ListNode *before = listnode[idx-1];
+        before->next = listnode[idx]->next;
+        delete listnode[idx];
+        return listnode[0];
+    }
+};
+```
+
+---
+
+## 20. [有效的括号](https://leetcode.cn/problems/valid-parentheses/description/?envType=study-plan-v2&envId=top-100-liked)
+
+用栈来判断即可。
+
+```cpp
+class Solution {
+public:
+    bool isValid(string s) {
+        vector<int> sta; sta.reserve(s.size());
+        for (int i = 0; i < s.size(); ++ i) {
+            if (s[i] == ')' || s[i] == '}' || s[i] == ']') {
+                if (s[i] == ')') {
+                    if (sta.empty() || sta.back() != '(') return false;
+                    else sta.pop_back();
+                } else if (s[i] == '}') {
+                    if (sta.empty() || sta.back() != '{') return false;
+                    else sta.pop_back();
+                } else {
+                    if (sta.empty() || sta.back() != '[') return false;
+                    else sta.pop_back();
+                }
+            } else sta.push_back(s[i]);
+        }
+        return sta.empty();
+    }
+};
+```
+
+---
+
+## 23. [合并 K 个升序链表](https://leetcode.cn/problems/merge-k-sorted-lists/description/?envType=study-plan-v2&envId=top-100-liked)
+
+建一个堆，然后保存每个链表的当前指针，每次取出堆顶元素，然后将堆顶元素的下一个元素插入堆中。
+
+```cpp
+class Solution {
+public:
+    ListNode* mergeKLists(vector<ListNode*>& lists) {
+        ListNode *head = nullptr;
+        ListNode *tail = nullptr;
+        priority_queue <pair<int, int>,vector<pair<int, int>>,greater<pair<int, int>> > heap;
+        for (int i = 0; i < lists.size(); ++ i) {
+            if (lists[i] != nullptr)
+                heap.push(make_pair(lists[i]->val, i));
+        }
+        while(!heap.empty()) {
+            pair<int, int> ret = heap.top();
+            heap.pop();
+            ListNode *nw = lists[ret.second];
+            lists[ret.second] = nw->next;
+            nw->next = nullptr;
+            if (head == nullptr) {
+                head = nw;
+                tail = nw;
+            } else {
+                tail->next = nw;
+                tail = nw;
+            }
+            if (lists[ret.second] != nullptr) {
+                heap.push(make_pair(lists[ret.second]->val, ret.second));
+            }
+        }
+        return head;
+    }
+};
+```
+
+---
+
+## 25. [K 个一组翻转链表](https://leetcode.cn/problems/reverse-nodes-in-k-group/description/?envType=study-plan-v2&envId=top-100-liked)
+
+添加一个 leftGuard 节点指向 head，后续用两个指针表示 `(]` 的区间然后进行翻转。
+
+```cpp
+class Solution {
+public:
+    ListNode* reverseKGroup(ListNode* head, int k) {
+        if (k == 1) return head;
+        ListNode *left, *right;
+        ListNode leftGuard(0, head);
+        right = left = &leftGuard;
+        int cnt = 0;
+        while(right->next != nullptr) {
+            right = right->next;
+            if (++cnt == k) {
+                ListNode *now = left->next, *tail = left->next;
+                ListNode *nextNode = now->next;
+                while(nextNode != right) {
+                    ListNode *tmp = nextNode->next;
+                    nextNode->next = now;
+                    now = nextNode;
+                    nextNode = tmp;
+                }
+                left->next->next = right->next;
+                right->next = now;
+                left->next = right;
+                left = right = tail;
+                cnt = 0;
+            }
+        }
+        return leftGuard.next;
+    }
+};
+```
+
+---
+
+## 32. [最长有效括号](https://leetcode.cn/problems/longest-valid-parentheses/description/?envType=study-plan-v2&envId=top-100-liked)
+
+栈求解括号序列，用栈维护每一个左括号的位置，通过记录`f[i]`表示以第 `i` 个字符结尾的最长有效括号的长度。
+
+```cpp
+class Solution {
+public:
+    int longestValidParentheses(string s) {
+        int ans = 0;
+        stack<int> sta;
+        vector<int> f(s.size());
+        for (int i = 0, res = 0; i < s.size(); ++ i) {
+            f[i] = 0;
+            if (s[i] == '(') {
+                sta.push(i);
+            } else {
+                if (sta.empty()) continue;
+                else {
+                    int idx = sta.top(); sta.pop();
+                    if (idx == 0) f[i] = i - idx + 1;
+                    else f[i] = f[idx-1] + (i - idx + 1);
+                    ans = max(ans, f[i]);
                 }
             }
         }
