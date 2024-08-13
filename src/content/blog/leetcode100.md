@@ -1,7 +1,7 @@
 ---
 author: Sky_miner
 pubDatetime: 2024-08-01T20:41:09+08:00
-modDatetime: 2024-08-10T17:29:00+08:00
+modDatetime: 2024-08-13T20:18:00+08:00
 title: LeetCode 热题 100 一句话题解集(更新中)
 featured: true
 draft: false
@@ -32,6 +32,31 @@ public:
             mp[nums[i]] = i;
         }
         return {};
+    }
+};
+```
+
+---
+
+## 3. [无重复字符的最长子串](https://leetcode.cn/problems/longest-substring-without-repeating-characters/description/?envType=study-plan-v2&envId=top-100-liked)
+
+滑动窗口，用一个 HashSet 记录已经出现的字符，每次右端点向右移动时判断是否重复，如果重复则左端点向右移动。
+
+```cpp
+class Solution {
+public:
+    unordered_set<int> hash;
+    int lengthOfLongestSubstring(string s) {
+        hash.clear();
+        int ans = 0;
+        for (int r = 0, l = 0; r < s.size(); ++ r) {
+            while(hash.contains(s[r])) {
+                hash.erase(s[l++]);
+            }
+            hash.insert(s[r]);
+            ans = max(ans, (int)hash.size());
+        }
+        return ans;
     }
 };
 ```
@@ -73,6 +98,55 @@ public:
         }
         if ((n + m) % 2 == 0) return (double)(lmax + rmin) / 2;
         else return lmax;
+    }
+};
+```
+
+---
+
+## 5. [最长回文子串](https://leetcode.cn/problems/longest-palindromic-substring/description/?envType=study-plan-v2&envId=top-100-liked)
+
+manacher 算法
+
+```cpp
+class Solution {
+    string prework(string s) {
+        string ret = "";
+        for (int i = 0; i < s.size(); ++ i) {
+            ret += '#';
+            ret += s[i];
+        }
+        ret += "#";
+        return ret;
+    }
+    vector<int>p;
+public:
+    string longestPalindrome(string s) {
+        string manaStr = prework(s);
+        p.clear();
+        p.resize(manaStr.size());
+        int R = -1, C = -1;
+        int ans = 0;
+        for (int i = 0; i < manaStr.size() - 1; ++ i) {
+            p[i] = R > i ? min(R - i ,p[2*C-i]) : 1;
+            while(i + p[i] < manaStr.size() && i - p[i] >= 0) {
+                if (manaStr[i+p[i]] == manaStr[i-p[i]]) ++ p[i];
+                else break;
+            }
+            if (i+p[i] > R) {
+                R = i+p[i];
+                C = i;
+            }
+            ans = max(ans, p[i]-1);
+        }
+        for (int i = 0;i < manaStr.size(); ++ i) {
+            if (ans == p[i]-1) {
+                int idx = i / 2 - ans / 2;
+                return s.substr(idx, ans);
+            }
+        }
+        printf("ans = %d\n" ,ans);
+        return "";
     }
 };
 ```
@@ -134,6 +208,41 @@ public:
                 }
             }
         }
+        return ans;
+    }
+};
+```
+
+---
+
+## 17. [电话号码的字母组合](https://leetcode.cn/problems/letter-combinations-of-a-phone-number/?envType=study-plan-v2&envId=top-100-liked)
+
+搜索枚举即可
+
+```cpp
+class Solution {
+    vector<string> ans;
+    string res;
+public:
+    void dfs(string &str, int idx) {
+        static string mapping[] = {"", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
+        if (idx == str.size()) {
+            ans.push_back(res);
+            return ;
+        }
+        string mapString = mapping[str[idx] - '1'];
+        for (int i = 0; i < mapString.size(); ++ i) {
+            res += mapString[i];
+            dfs(str, idx+1);
+            res.pop_back();
+        }
+
+    }
+    vector<string> letterCombinations(string digits) {
+        ans.clear();
+        if (digits.empty()) return ans;
+        res = "";
+        dfs(digits, 0);
         return ans;
     }
 };
@@ -524,6 +633,31 @@ public:
 
 ---
 
+## 64. [最小路径和](https://leetcode.cn/problems/minimum-path-sum/description/?envType=study-plan-v2&envId=top-100-liked)
+
+动态规划，`f[i][j] = min(f[i-1][j], f[i][j-1]) + grid[i][j]`。
+
+```cpp
+class Solution {
+    vector<vector<int>> f;
+public:
+    int minPathSum(vector<vector<int>>& grid) {
+        f = grid;
+        for (int i = 0; i < grid.size(); ++ i) {
+            for (int j = 0; j < grid[i].size(); ++ j) {
+                if (i == 0 && j == 0) continue;
+                if (i == 0) f[i][j] = f[i][j-1] + grid[i][j];
+                else if (j == 0) f[i][j] = f[i-1][j] + grid[i][j];
+                else f[i][j] = min(f[i-1][j], f[i][j-1]) + grid[i][j];
+            }
+        }
+        return f.back().back();
+    }
+};
+```
+
+---
+
 ## 73. [矩阵置零](https://leetcode.cn/problems/set-matrix-zeroes/description/?envType=study-plan-v2&envId=top-100-liked)
 
 将行或者列的置零信号保存到第 $0$ 行和第 $0$ 列，然后再开两个变量分别表示第 $0$ 行和第 $0$ 列是否需要置零。
@@ -694,6 +828,40 @@ public:
 
 ---
 
+## 105. [从前序与中序遍历序列构造二叉树](https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/description/?envType=study-plan-v2&envId=top-100-liked)
+
+以前序遍历为主，每次找到当前位置在中序遍历中出现的位置来将问题划分为两个子问题。
+
+```cpp
+class Solution {
+    TreeNode* dfs(vector<int>& preorder, vector<int> &inorder, int &idx, int l, int r) {
+        if (l > r) return nullptr;
+        TreeNode *p = new TreeNode();
+        p->val = preorder[idx];
+        int mid = -1;
+        for (int i = l; i <= r; ++ i) {
+            if (inorder[i] == preorder[idx]) {
+                mid = i;
+                break;
+            }
+        }
+        assert(mid != -1);
+        idx += 1;
+
+        p->left = dfs(preorder, inorder, idx, l, mid-1);
+        p->right = dfs(preorder, inorder, idx, mid+1, r);
+        return p;
+    }
+public:
+    TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+        int idx = 0;
+        return dfs(preorder, inorder, idx, 0, inorder.size()-1);
+    }
+};
+```
+
+---
+
 ## 108. [将有序数组转换为二叉搜索树](https://leetcode.cn/problems/convert-sorted-array-to-binary-search-tree/description/?envType=study-plan-v2&envId=top-100-liked)
 
 通过 dfs 进行递归建树，每次取中间的数字作为根节点，然后递归建立左右子树。
@@ -783,6 +951,32 @@ public:
         ans.clear();
         dfs(0, s);
         return ans;
+    }
+};
+```
+
+---
+
+## 138. [随机链表的复制](https://leetcode.cn/problems/copy-list-with-random-pointer/description/?envType=study-plan-v2&envId=top-100-liked)
+
+用一个 HashMap 来记录下来每一个节点对应的新节点，在拷贝时通过记忆化的方式来将指针指向正确的位置。
+
+```cpp
+class Solution {
+    unordered_map<Node*, Node*> hash;
+    Node* copy(Node *head) {
+        if (head == nullptr) return nullptr;
+        if (hash.contains(head)) return hash[head];
+        Node *p = new Node(head->val);
+        hash[head] = p;
+        p->next = copy(head->next);
+        p->random = copy(head->random);
+        return p;
+    }
+public:
+    Node* copyRandomList(Node* head) {
+        hash.clear();
+        return copy(head);
     }
 };
 ```
@@ -1166,6 +1360,34 @@ impl Solution {
 
 ---
 
+## 279. [完全平方数](https://leetcode.cn/problems/perfect-squares/description/?envType=study-plan-v2&envId=top-100-liked)
+
+这个题动态规划，设`f[i]`表示和为 $i$ 的最少数量，然后枚举完全平方数 DP 即可。但是题解貌似用的是什么四平方数的数学定理，没太看懂）
+
+```cpp
+class Solution {
+    int f[10010];
+    void prework(int n) {
+        f[0] = 0;
+        for (int i = 1;i <= n; ++ i) {
+            f[i] = i;
+            for (int j = 1; j*j <= i; ++ j) {
+                f[i] = min(f[i], f[i - j*j] + 1);
+            }
+        }
+    }
+public:
+    Solution() {
+        prework(10000);
+    }
+    int numSquares(int n) {
+        return f[n];
+    }
+};
+```
+
+---
+
 ## 287. [寻找重复数](https://leetcode.cn/problems/find-the-duplicate-number/)
 
 很巧妙的思路，将数组中保存的数值看作连出的有向边，存在重复数字时一定存在环。快慢指针找到环之后，就可以将慢指针放到起点同步开始走，重合点就是入环点就是答案，可以列公式证明。
@@ -1259,6 +1481,83 @@ public:
                 }
             }
             if(k == 0) break;
+        }
+        return ans;
+    }
+};
+```
+
+---
+
+## 437. [路径总和 III](https://leetcode.cn/problems/path-sum-iii/description/?envType=study-plan-v2&envId=top-100-liked)
+
+首先计算前缀和，用一个 HashMap 保存每一个数字是否出现，出现了多少次。然后通过搜索的方式在 HashMap 中查找以当前节点为端点的路径条数就可以了。
+
+```cpp
+class Solution {
+    unordered_multiset<long long> hash;
+    int ans;
+    void dfs(TreeNode *u, long long sum, const int &targetSum) {
+        if (u == nullptr) return ;
+        sum += u->val;
+        ans += hash.count(sum - targetSum);
+        hash.insert(sum);
+        dfs(u->left, sum, targetSum);
+        dfs(u->right, sum, targetSum);
+        hash.erase(hash.find(sum));
+    }
+public:
+    int pathSum(TreeNode* root, int targetSum) {
+        ans = 0;
+        hash.insert(0);
+        dfs(root, 0, targetSum);
+        return ans;
+    }
+};
+```
+
+---
+
+## 438. [找到字符串中所有字母异位词](https://leetcode.cn/problems/find-all-anagrams-in-a-string/description/?envType=study-plan-v2&envId=top-100-liked)
+
+用桶来统计每一个字符出现的次数，然后滑动窗口不断维护窗口内的字符出现次数，维护匹配即可。
+
+```cpp
+class Solution {
+    int wc[26], nw[26];
+    void addChar(char c, int &matchCount) {
+        int charIdx = c - 'a';
+        nw[charIdx] += 1;
+        if (nw[charIdx] == wc[charIdx]) ++ matchCount;
+        else if(nw[charIdx] == wc[charIdx]+1) -- matchCount;
+        return ;
+    }
+    void delChar(char c, int &matchCount) {
+        int charIdx = c - 'a';
+        nw[charIdx] -= 1;
+        if (nw[charIdx] == wc[charIdx]) ++ matchCount;
+        else if(nw[charIdx] == wc[charIdx]-1) -- matchCount;
+        return ;
+    }
+public:
+    vector<int> findAnagrams(string s, string p) {
+        vector<int> ans;
+        if(s.size() < p.size()) return ans;
+        memset(wc, 0, sizeof wc);
+        for (int i = 0; i < p.size(); ++ i){
+            wc[p[i] - 'a'] += 1;
+        }
+        int matchCount = 0;
+        for (int j = 0; j < 26; ++ j) {
+            nw[j] = 0;
+            if (nw[j] == wc[j]) ++ matchCount;
+        }
+        for (int i = 0; i < p.size(); ++ i) addChar(s[i], matchCount);
+        if (matchCount == 26) ans.push_back(0);
+        for (int i = p.size(); i < s.size(); ++ i) {
+            addChar(s[i], matchCount);
+            delChar(s[i-p.size()], matchCount);
+            if (matchCount == 26) ans.push_back(i-p.size()+1);
         }
         return ans;
     }
