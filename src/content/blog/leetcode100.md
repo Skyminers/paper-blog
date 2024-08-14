@@ -1,7 +1,7 @@
 ---
 author: Sky_miner
 pubDatetime: 2024-08-01T20:41:09+08:00
-modDatetime: 2024-08-13T20:18:00+08:00
+modDatetime: 2024-08-14T23:12:00+08:00
 title: LeetCode 热题 100 一句话题解集(更新中)
 featured: true
 draft: false
@@ -633,6 +633,36 @@ public:
 
 ---
 
+## 54. [螺旋矩阵](https://leetcode.cn/problems/spiral-matrix/description/?envType=study-plan-v2&envId=top-100-liked)
+
+通过维护边界线的方式来完成，维护目前剩余的上下左右四个边界线。
+
+```cpp
+class Solution {
+public:
+    vector<int> spiralOrder(vector<vector<int>>& matrix) {
+        vector<int> ans;
+        if (matrix.empty()) return ans;
+        int u = 0, l = 0;
+        int d = matrix.size() - 1, r = matrix[0].size() - 1;
+        ans.reserve(matrix.size() * matrix[0].size());
+        while(1) {
+            for (int i = l; i <= r; ++ i) ans.push_back(matrix[u][i]);
+            if (++ u > d) break;
+            for (int i = u; i <= d; ++ i) ans.push_back(matrix[i][r]);
+            if (-- r < l) break;
+            for (int i = r; i >= l; -- i) ans.push_back(matrix[d][i]);
+            if (-- d < u) break;
+            for (int i = d; i >= u; -- i) ans.push_back(matrix[i][l]);
+            if (++ l > r) break;
+        }
+        return ans;
+    }
+};
+```
+
+---
+
 ## 64. [最小路径和](https://leetcode.cn/problems/minimum-path-sum/description/?envType=study-plan-v2&envId=top-100-liked)
 
 动态规划，`f[i][j] = min(f[i-1][j], f[i][j-1]) + grid[i][j]`。
@@ -781,6 +811,29 @@ public:
 
 ---
 
+## 79. [子集](https://leetcode.cn/problems/subsets/description/?envType=study-plan-v2&envId=top-100-liked)
+
+二进制枚举
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> subsets(vector<int>& nums) {
+        vector<vector<int>> ans;
+        for (int i = 0 ; i < (1 << nums.size()); ++ i) {
+            vector<int> res;
+            for (int j = 0; j < nums.size(); ++ j) {
+                if (i & (1 << j)) res.push_back(nums[j]);
+            }
+            ans.push_back(res);
+        }
+        return ans;
+    }
+};
+```
+
+---
+
 ## 79. [单词搜索](https://leetcode.cn/problems/word-search/description/?envType=study-plan-v2&envId=top-100-liked)
 
 直接搜索，记录当前位置匹配到了第几个元素，然后递归搜索即可。
@@ -886,6 +939,31 @@ public:
 
 ---
 
+## 124. [二叉树中的最大路径和](https://leetcode.cn/problems/binary-tree-maximum-path-sum/description/?envType=study-plan-v2&envId=top-100-liked)
+
+在每个点上计算以这个点为根的子树中端点为根的最大路径，因为是二叉树，所以每次统计答案的时候直接 `left + right` 就是通过根的最大路径。
+
+```cpp
+class Solution {
+    int ans;
+    int dfs(TreeNode *p) {
+        if (p == nullptr) return 0;
+        int left = max(dfs(p->left), 0);
+        int right = max(dfs(p->right), 0);
+        ans = max(ans, left + right + p->val);
+        return max(left, right) + p->val;;
+    }
+public:
+    int maxPathSum(TreeNode* root) {
+        ans = -0x7fffffff;
+        dfs(root);
+        return ans;
+    }
+};
+```
+
+---
+
 ## 128. [最长连续序列](https://leetcode.cn/problems/longest-consecutive-sequence/?envType=study-plan-v2&envId=top-100-liked)
 
 将所有数字插入到 HashMap 内后，通过枚举的方式寻找连续段的起点，然后通过循环找到终点即可。
@@ -979,6 +1057,40 @@ public:
         return copy(head);
     }
 };
+```
+
+---
+
+## 143. [环形链表 II](https://leetcode.cn/problems/linked-list-cycle-ii/description/?envType=study-plan-v2&envId=top-100-liked)
+
+首先在 Head 定义快慢两个指针，快指针每次移动 $2$，慢指针每次移动 $1$。如果我们设 $L$ 表示入口点到入环点的距离，$R$ 表示环的长度，那么我们可以计算出慢指针到达入环点时快指针位于环上距离入环点 $L$ 的位置，所以再经过 $(R-L)$ 步就会到达相遇点，所以相遇点位于环上距离入环点 $(R-L)$ 步的位置。
+
+接下来将慢指针重新放回起点，然后将快指针的步幅调整为 $1$。这样在经过 $L$ 步后，慢指针刚好到达入环点，快指针也刚好到达入环点。因此此时的相遇点就是入环点，也就是题目所求的位置。
+
+```cpp
+#define next(pointer) \
+    if ((pointer)->next != nullptr) pointer = pointer->next; \
+    else return nullptr
+
+class Solution {
+public:
+    ListNode *detectCycle(ListNode *head) {
+        if (head == nullptr) return nullptr;
+        ListNode *slowPointer = head, *fastPointer = head;
+        do {
+            next(slowPointer);
+            next(fastPointer);
+            next(fastPointer);
+        } while(slowPointer != fastPointer);
+        slowPointer = head;
+        while(slowPointer != fastPointer) {
+            next(slowPointer);
+            next(fastPointer);
+        }
+        return slowPointer;
+    }
+};
+#undef next(pointer)
 ```
 
 ---
