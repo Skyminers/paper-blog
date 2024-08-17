@@ -1,7 +1,7 @@
 ---
 author: Sky_miner
 pubDatetime: 2024-08-01T20:41:09+08:00
-modDatetime: 2024-08-14T23:12:00+08:00
+modDatetime: 2024-08-17T20:01:00+08:00
 title: LeetCode 热题 100 一句话题解集(更新中)
 featured: true
 draft: false
@@ -461,6 +461,30 @@ public:
 
 ---
 
+## 41. [缺失的第一个正数](https://leetcode.cn/problems/first-missing-positive/description/?envType=study-plan-v2&envId=top-100-liked)
+
+利用原本的数组元素存储信息，每次遇到一个下标为 `i` 的数字 `num[i]` 时，通过不断的 `swap` 操作将 `num[i]` 放到正确的位置上，最后再遍历一次数组即可。
+
+```cpp
+class Solution {
+public:
+    int firstMissingPositive(vector<int>& nums) {
+        for (int i = 0; i < nums.size(); ++ i) {
+            while (nums[i] > 0 && nums[i] <= nums.size()) {
+                if (nums[i] == nums[nums[i]-1]) break;
+                swap(nums[i], nums[nums[i]-1]);
+            }
+        }
+        for (int i = 0; i < nums.size(); ++ i) {
+            if (nums[i] != i+1) return i+1;
+        }
+        return nums.size() + 1;
+    }
+};
+```
+
+---
+
 ## 42. [接雨水](https://leetcode.cn/problems/trapping-rain-water/?envType=study-plan-v2&envId=top-100-liked)
 
 可以看到，在从左向右移动的过程中，每次最高点更新时就会有一个新的接雨水的坑出现。所以循环两次，第一次从左向右，第二次从右向左，如果最高点有更新的话就是出现了新的水坑。
@@ -493,30 +517,6 @@ public:
             }
         }
         return ans;
-    }
-};
-```
-
----
-
-## 41. [缺失的第一个正数](https://leetcode.cn/problems/first-missing-positive/description/?envType=study-plan-v2&envId=top-100-liked)
-
-利用原本的数组元素存储信息，每次遇到一个下标为 `i` 的数字 `num[i]` 时，通过不断的 `swap` 操作将 `num[i]` 放到正确的位置上，最后再遍历一次数组即可。
-
-```cpp
-class Solution {
-public:
-    int firstMissingPositive(vector<int>& nums) {
-        for (int i = 0; i < nums.size(); ++ i) {
-            while (nums[i] > 0 && nums[i] <= nums.size()) {
-                if (nums[i] == nums[nums[i]-1]) break;
-                swap(nums[i], nums[nums[i]-1]);
-            }
-        }
-        for (int i = 0; i < nums.size(); ++ i) {
-            if (nums[i] != i+1) return i+1;
-        }
-        return nums.size() + 1;
     }
 };
 ```
@@ -633,6 +633,32 @@ public:
 
 ---
 
+## 53. [最大子数组和](https://leetcode.cn/problems/maximum-subarray/description/?envType=study-plan-v2&envId=top-100-liked)
+
+维护一个变量表示从当前数字往前扩展能得到的最大子数组和。
+
+```cpp
+class Solution {
+public:
+    int maxSubArray(vector<int>& nums) {
+        int ans = -0x7fffffff;
+        int res = -0x7fffffff;
+        for (auto x: nums) {
+            if (res < 0) {
+                ans = max(ans, x);
+                res = x;
+            } else {
+                ans = max(ans, res + x);
+                res += x;
+            }
+        }
+        return ans;
+    }
+};
+```
+
+---
+
 ## 54. [螺旋矩阵](https://leetcode.cn/problems/spiral-matrix/description/?envType=study-plan-v2&envId=top-100-liked)
 
 通过维护边界线的方式来完成，维护目前剩余的上下左右四个边界线。
@@ -663,6 +689,63 @@ public:
 
 ---
 
+## 56. [合并区间](https://leetcode.cn/problems/merge-intervals/description/?envType=study-plan-v2&envId=top-100-liked)
+
+按照左端点排序后线形扫一遍并进行合并
+
+```cpp
+class Solution {
+    static bool compare(const vector<int> &a, const vector<int> &b) {
+        return a[0] < b[0];
+    }
+public:
+    vector<vector<int>> merge(vector<vector<int>>& intervals) {
+        vector<vector<int>> ans;
+        if (intervals.empty()) return ans;
+        sort(intervals.begin(), intervals.end(), compare);
+        int l = intervals[0][0], r = intervals[0][1];
+        for (int i = 1; i < intervals.size(); ++ i) {
+            if (intervals[i][0] <= r) {
+                r = max(r, intervals[i][1]);
+            } else {
+                ans.push_back(vector<int>({l, r}));
+                l = intervals[i][0];
+                r = intervals[i][1];
+            }
+        }
+        ans.push_back(vector<int>({l, r}));
+        return ans;
+    }
+};
+```
+
+---
+
+## 62. [不同路径](https://leetcode.cn/problems/unique-paths/description/?envType=study-plan-v2&envId=top-100-liked)
+
+`f[i][j]` 表示从起点走到 $(i, j)$ 的方案数:
+- `f[i][j] = f[i-1][j] + f[i][j-1]`,
+
+```cpp
+class Solution {
+    int f[100][100];
+public:
+    int uniquePaths(int m, int n) {
+        f[0][0] = 1;
+        for (int i = 1; i < m; ++ i) f[i][0] = 1;
+        for (int i = 1; i < n; ++ i) f[0][i] = 1;
+        for (int i = 1;i < m; ++ i) {
+            for (int j = 1; j < n; ++ j) {
+                f[i][j] = f[i-1][j] + f[i][j-1];
+            }
+        }
+        return f[m-1][n-1];
+    }
+};
+```
+
+---
+
 ## 64. [最小路径和](https://leetcode.cn/problems/minimum-path-sum/description/?envType=study-plan-v2&envId=top-100-liked)
 
 动态规划，`f[i][j] = min(f[i-1][j], f[i][j-1]) + grid[i][j]`。
@@ -682,6 +765,56 @@ public:
             }
         }
         return f.back().back();
+    }
+};
+```
+
+
+---
+
+## 70. [爬楼梯](https://leetcode.cn/problems/climbing-stairs/description/?envType=study-plan-v2&envId=top-100-liked)
+
+记忆化搜索，斐波那契数列。
+
+```cpp
+class Solution {
+    int f[55];
+
+public:
+    Solution() {
+        memset(f, -1, sizeof f);
+        f[0] = 1;
+        f[1] = 1;
+    }
+    int climbStairs(int n) {
+        if (f[n] != -1) return f[n];
+        return f[n] = climbStairs(n-1) + climbStairs(n-2);
+    }
+};
+```
+
+---
+
+## 72. [编辑距离](https://leetcode.cn/problems/edit-distance/description/?envType=study-plan-v2&envId=top-100-liked)
+
+`f[i][j]` 表示 `s[0..i-1]` 和 `t[0..j-1]` 的编辑距离
+
+```cpp
+class Solution {
+public:
+    int minDistance(string word1, string word2) {
+        int n = word1.size(), m = word2.size();
+        vector<vector<int>> f(n+1, vector<int>(m+1));
+        f[0][0] = 0;
+        for (int i = 1; i <= n; ++ i) f[i][0] = i;
+        for (int i = 1; i <= m; ++ i) f[0][i] = i;
+        for (int i = 1; i <= n; ++ i) {
+            for (int j = 1; j <= m; ++ j) {
+                if (word1[i-1] == word2[j-1]) f[i][j] = f[i-1][j-1];
+                else f[i][j] = min(min(f[i-1][j-1], f[i-1][j]), f[i][j-1]) + 1;
+            }
+        }
+        return f[n][m];
     }
 };
 ```
@@ -735,23 +868,23 @@ public:
 
 ---
 
-## 70. [爬楼梯](https://leetcode.cn/problems/climbing-stairs/description/?envType=study-plan-v2&envId=top-100-liked)
+## 75. [颜色分类](https://leetcode.cn/problems/sort-colors/description/?envType=study-plan-v2&envId=top-100-liked)
 
-记忆化搜索，斐波那契数列。
+维护左指针表示 $0$ 延续到哪里了，同时维护右指针表示 $2$ 延续到哪里了。从左边换过来的只可能是 $2$，所以可以直接下一个，从右边换过来的不确定，所以需要 `while` 循环。代码上我是都放到了 `while` 里面，但其实从左边换过来的可以提到循环外面。
 
 ```cpp
 class Solution {
-    int f[55];
-
 public:
-    Solution() {
-        memset(f, -1, sizeof f);
-        f[0] = 1;
-        f[1] = 1;
-    }
-    int climbStairs(int n) {
-        if (f[n] != -1) return f[n];
-        return f[n] = climbStairs(n-1) + climbStairs(n-2);
+    void sortColors(vector<int>& nums) {
+        int l = 0, r = nums.size()-1;
+        for (int i = 0; i <= r; ++ i) {
+            while(l <= i && i <= r) {
+                if (nums[i] == 0) swap(nums[l++], nums[i]);
+                else if (nums[i] == 2) swap(nums[r--], nums[i]);
+                else break;
+            }
+        }
+        return ;
     }
 };
 ```
@@ -1058,6 +1191,50 @@ public:
     }
 };
 ```
+---
+
+## 136. [只出现一次的数字](https://leetcode.cn/problems/single-number/description/?envType=study-plan-v2&envId=top-100-liked)
+
+异或和，出现偶数次的数字都会互相抵消。
+
+```cpp
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        int x = 0;
+        for (int i = 0; i < nums.size(); ++ i) {
+            x ^= nums[i];
+        }
+        return x;
+    }
+};
+```
+
+---
+
+## 139. [单词拆分](https://leetcode.cn/problems/word-break/description/?envType=study-plan-v2&envId=top-100-liked)
+
+设 `f[i]` 表示能够凑出 `0 .. i-1`, 枚举转移更新。判断可以用 Hash 表或者 Trie。
+
+```cpp
+class Solution {
+    vector<bool> f;
+    unordered_set<string> hash;
+public:
+    bool wordBreak(string s, vector<string>& wordDict) {
+        hash.clear();
+        for (auto str : wordDict) hash.insert(str);
+        f.clear(); f.resize(s.size()+1);
+        f[0] = true;
+        for (int i = 1; i <= s.size(); ++ i) {
+            for (int j = 0; j < i; ++ j) {
+                if (f[j] && hash.contains(s.substr(j, i-j))) f[i] = true;
+            }
+        }
+        return f[s.size()];
+    }
+};
+```
 
 ---
 
@@ -1259,6 +1436,54 @@ public:
 
     int getMin() {
         return minStack.back();
+    }
+};
+```
+
+---
+
+## 162. [多数元素](https://leetcode.cn/problems/majority-element/description/?envType=study-plan-v2&envId=top-100-liked)
+
+维护目前的主元素和该元素出现的次数，任意与该元素不同的数字视作**抵消**。
+
+```cpp
+class Solution {
+public:
+    int majorityElement(vector<int>& nums) {
+        int value = -1, cnt = 0;
+        for (auto x : nums) {
+            if (x != value) {
+                if (cnt) -- cnt;
+                else if (cnt == 0) {
+                    value = x;
+                    ++ cnt;
+                }
+            } else ++ cnt;
+        }
+        return value;
+    }
+};
+```
+
+---
+
+## 199. [二叉树的右视图](https://leetcode.cn/problems/binary-tree-right-side-view/description/?envType=study-plan-v2&envId=top-100-liked)
+
+如果我们每次都先递归搜索右子树，那么每个深度中第一个被访问的点就是被看到的点。
+
+```cpp
+class Solution {
+    void dfs(TreeNode *root, int depth, vector<int> &ans) {
+        if (root == nullptr) return ;
+        if (depth == ans.size()) ans.push_back(root->val);
+        dfs(root->right, depth+1, ans);
+        dfs(root->left,  depth+1, ans);
+    }
+public:
+    vector<int> rightSideView(TreeNode* root) {
+        vector<int> ans;
+        dfs(root, 0, ans);
+        return ans;
     }
 };
 ```
