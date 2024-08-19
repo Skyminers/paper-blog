@@ -1,7 +1,7 @@
 ---
 author: Sky_miner
 pubDatetime: 2024-08-01T20:41:09+08:00
-modDatetime: 2024-08-17T20:01:00+08:00
+modDatetime: 2024-08-19T10:06:00+08:00
 title: LeetCode 热题 100 一句话题解集(更新中)
 featured: true
 draft: false
@@ -724,6 +724,7 @@ public:
 ## 62. [不同路径](https://leetcode.cn/problems/unique-paths/description/?envType=study-plan-v2&envId=top-100-liked)
 
 `f[i][j]` 表示从起点走到 $(i, j)$ 的方案数:
+
 - `f[i][j] = f[i-1][j] + f[i][j-1]`,
 
 ```cpp
@@ -768,7 +769,6 @@ public:
     }
 };
 ```
-
 
 ---
 
@@ -1191,6 +1191,7 @@ public:
     }
 };
 ```
+
 ---
 
 ## 136. [只出现一次的数字](https://leetcode.cn/problems/single-number/description/?envType=study-plan-v2&envId=top-100-liked)
@@ -1397,6 +1398,31 @@ public:
             }
         }
         return ans;
+    }
+};
+```
+
+---
+
+## 153. [寻找旋转排序数组中的最小值](https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array/description/?envType=study-plan-v2&envId=top-100-liked)
+
+如果我们取第一个数字，那么所有大于这个数字的数分布在数组的左半边，小于这个数字的数分布在数组的右半边，通过二分确认分界点。
+
+```cpp
+class Solution {
+public:
+    int findMin(vector<int>& nums) {
+        int midValue = nums[0];
+        int l = 1, r = nums.size() - 1, ans = -1;
+        while(l <= r) {
+            int mid = l+r >> 1;
+            if (nums[mid] < midValue) {
+                r = mid-1;
+                ans = mid;
+            } else l = mid+1;
+        }
+        if (ans == -1) return nums[0];
+        return nums[ans];
     }
 };
 ```
@@ -1618,6 +1644,31 @@ public:
 
 ---
 
+## 235. [二叉树的最近公共祖先](https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-tree/description/?envType=study-plan-v2&envId=top-100-liked)
+
+两种方法，一种是记录 father 和深度，还可以倍增实现 $O(1)$ 查询，但是这个题只有一次查询，可以 $O(n)$ 暴力搜索。
+
+```cpp
+class Solution {
+    bool dfs(TreeNode *root, TreeNode *p, TreeNode *q, TreeNode* &ans) {
+        if (root == nullptr) return false;
+        int l = dfs(root->left, p, q, ans);
+        int r = dfs(root->right,p, q, ans);
+        if ( (l && r) || ((root == p || root == q) && (l || r)) )
+            ans = root;
+        return l || r || (root == p) || (root == q);
+    }
+public:
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        TreeNode *ans = nullptr;
+        dfs(root, p, q, ans);
+        return ans;
+    }
+};
+```
+
+---
+
 ## 238. [移动零](https://leetcode.cn/problems/move-zeroes/description/?envType=study-plan-v2&envId=top-100-liked)
 
 双指针，一个指针遍历数组，另一个指针指向下一个非零元素应该存放的位置。
@@ -1826,6 +1877,35 @@ public:
 
 ---
 
+## 416. [分割等和子集](https://leetcode.cn/problems/partition-equal-subset-sum/description/?envType=study-plan-v2&envId=top-100-liked)
+
+背包
+
+```cpp
+class Solution {
+#define maxn 10000
+    bool f[maxn + 1];
+public:
+    bool canPartition(vector<int>& nums) {
+        int sum = 0;
+        memset(f, 0, sizeof f);
+        f[0] = true;
+        for (auto x: nums) sum += x;
+        if (sum % 2 != 0) return false;
+
+        int lim = sum / 2;
+        for (auto x: nums) {
+            for (int i = lim; i >= x; -- i) {
+                f[i] |= f[i - x];
+            }
+        }
+        return f[lim];
+    }
+};
+```
+
+---
+
 ## 437. [路径总和 III](https://leetcode.cn/problems/path-sum-iii/description/?envType=study-plan-v2&envId=top-100-liked)
 
 首先计算前缀和，用一个 HashMap 保存每一个数字是否出现，出现了多少次。然后通过搜索的方式在 HashMap 中查找以当前节点为端点的路径条数就可以了。
@@ -1920,6 +2000,54 @@ public:
             hash[sum] += 1;
         }
         return ans;
+    }
+};
+```
+
+---
+
+## 994. [腐烂的橘子](https://leetcode.cn/problems/rotting-oranges/description/?envType=study-plan-v2&envId=top-100-liked)
+
+用队列保存待搜索的橘子位置，BFS。
+
+```cpp
+class Solution {
+public:
+    int orangesRotting(vector<vector<int>>& grid) {
+        static int dx[] = {0, 0, 1, -1};
+        static int dy[] = {1, -1, 0, 0};
+        queue< pair<int,int> > q;
+        int freshNumber = 0;
+        for (int i = 0 ; i < grid.size(); ++ i) {
+            for(int j = 0;j < grid[i].size(); ++ j) {
+                if (grid[i][j] == 2) q.push(make_pair(i, j));
+                else if(grid[i][j] == 1) ++ freshNumber;
+            }
+        }
+        q.push(make_pair(-1, -1));
+        int timeCounter = 0;
+        while(!q.empty()) {
+            int x = q.front().first;
+            int y = q.front().second;
+            q.pop();
+            if (x == -1 && y == -1) {
+                if (q.empty()) break;
+                ++ timeCounter;
+                q.push(make_pair(-1, -1));
+                continue;
+            }
+            for (int k = 0; k < 4; ++ k) {
+                int nx = x + dx[k];
+                int ny = y + dy[k];
+                if (nx < 0 || nx >= grid.size() || ny < 0 || ny >= grid[x].size())
+                    continue;
+                if (grid[nx][ny] != 1) continue;
+                -- freshNumber;
+                grid[nx][ny] = 2;
+                q.push(make_pair(nx, ny));
+            }
+        }
+        return freshNumber == 0 ? timeCounter : -1;
     }
 };
 ```
