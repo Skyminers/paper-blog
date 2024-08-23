@@ -20,6 +20,44 @@ description: 网上总结的面试 Cheat Book
 
 纯虚函数的定义方式是在定义的语句后面加`=0`，例如：`virtual void funtion1()=0`
 
+### vector 中 push_back 和 emplace_back 的区别
+
+emplace_back 在某些情况下要更快一些。
+
+**push_back**:
+
+- 如果传入的是左值: push_back 会首先调用构造函数构造出右值，然后调用 copy 将这个右值拷贝到 vector 空间内，然后在结束时调用这个右值的析构函数。
+- 如果传入的是右值: push_back 首先会调用构造函数构造出右值，然后调用 move 将这个右值移动到 vector 空间内，然后在结束时调用这个右值的析构函数。
+
+**emplace_back**:
+
+- 如果传入的是右指，那么 emplace_back 会直接在 vector 的指定位置的内存创建对应的数据，少了一次 move。其他情况与 push_back 相同。
+
+### move 底层是怎么实现的
+
+假设要将 A 中的数据移动到 B 中，move 底层会将 B 指向 A 的数据地址，然后将 A 的数据地址置为 nullptr。也就是说将数据的所有权转移到了 B 中。
+
+std::move 的作用是将左值引用转换为右值引用，这样使用 `a = std::move(b)` 时就可以自动调用移动构造函数来进行移动。
+
+### 完美转发的原理
+
+在 C++17 中，完美转发的实现原理是：
+
+1. 如果参数是左值引用，那么转发时也使用左值引用，即std::forward(t)返回的是左值引用；
+2. 如果参数是右值引用或者折叠表达式右值引用，那么转发时也使用右值引用，即std::forward(t)返回的是右值引用。
+
+关键函数 `std::forward`，如果传入的是左值引用就会返回左值引用，传入的是右值引用的话就会返回右值引用。例如
+
+```cpp
+template <typename T>
+void foo(T&& arg) {
+    // 使用 std::forward 完美转发 arg 参数给 bar 函数
+    bar(std::forward<T>(arg));
+}
+```
+
+---
+
 ## Python 相关
 
 ### Python 可变对象与不可变对象
@@ -28,6 +66,8 @@ description: 网上总结的面试 Cheat Book
 
 - 不可变对象：int, float, str, tuple
 - 可变对象：list, dict, set
+
+---
 
 ## 机器学习相关
 
@@ -48,13 +88,7 @@ Batchnorm 是对每个 batch 的某一个维度组合成的特征进行归一化
 
 不可学习参数：全局均值和全局方差。
 
-### Vit 为什么加入 cls 分类 token？相比直接在最后用第一个有什么好处？
-
-Token 可以捕获全局的信息，如果直接用第一个的话可能会跟第一个 Patch 有很强的关系，无法有效捕获其他 Patch 的信息。
-
-### Transformer 为什么要除以根号 dk
-
-因为在计算 Attention 时，计算的是 $Q \cdot K^T$，如果不除以根号 dk，那么 $Q \cdot K^T$ 的值会很大，导致 Softmax 后的值很小，这样会导致梯度消失。
+---
 
 ## 八股文
 
@@ -167,6 +201,8 @@ Linux的设计哲学中有一条是“一切皆文件”，这主要体现在以
 
 总的来说，软链接和硬链接都是Linux系统中实现文件链接的方式，但它们在实现机制和使用场景上有所不同。
 
+---
+
 ## 智力/算法题
 
 ### 如何在 1T 的数据中寻找中位数
@@ -221,6 +257,9 @@ Linux的设计哲学中有一条是“一切皆文件”，这主要体现在以
 1. 双堆法
 2. 二分中位数的值，二分之后将数据分为大于 mid 和小于 mid 的两个部分，然后递归操作。
 
+---
+
 ## 参考链接
 
 - [10 道 BAT 大厂海量数据面试题](https://cloud.tencent.com/developer/article/1550063)
+- [C++ 完美转发深度解析:从入门到精通](https://developer.aliyun.com/article/1463199)
