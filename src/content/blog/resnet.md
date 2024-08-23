@@ -1,7 +1,7 @@
 ---
 author: Sky_miner
 pubDatetime: 2024-08-13T17:40:22.000+08:00
-# modDatetime: 2024-08-13T17:40:22.000+08:00
+modDatetime: 2024-08-23T10:37:22.000+08:00
 title: ResNet 面试突击
 featured: false
 draft: false
@@ -64,4 +64,59 @@ ResNet 通过将多个神经网络的层聚合成一个块，然后再块的一�
 
 ReLU 在输入为负数时恒为 0，因此对梯度消失的效果有限。ResNet 的梯度消失和爆炸的问题主要是通过 BN 和初始化来解决的。
 
-<!-- ### BatchNorm 的公式及代码实现 -->
+### 什么是BatchNorm？BatchNorm如何计算并起到了什么样的效果？
+
+BatchNorm 可以让某一维度的数据在 Batch 内进行归一化，这种操作为数据引入了较为随机的扰动，可以起到正则化的效果。也有的解释说 BatchNorm 通过使损失的landscape更加平滑降低了优化的难度。
+
+### BatchNorm 的公式及代码实现
+
+$$
+\mu_{\mathcal{B}} = \frac{1}{|\mathcal{B}|}\sum_{x \in \mathcal{B}} x , \sigma^2_{\mathcal{B}} = \frac{1}{|\mathcal{B}|}\sum_{x \ in \mathcal{B}}(x - \mu)^2 \\
+\hat{x} = \frac{x - \mu_{\mathcal{B}}}{\sqrt{\sigma^2_{\mathcal{B}} + \epsilon}} \\
+y_i = \gamma \hat{x}_i + \beta
+$$
+
+```python
+def Batchnorm_simple_for_train(x, gamma, beta, bn_param):
+"""
+param:x    : 输入数据，设shape(B,L)
+param:gama : 缩放因子  γ
+param:beta : 平移因子  β
+param:bn_param   : batchnorm所需要的一些参数
+    eps      : 接近0的数，防止分母出现0
+    momentum : 动量参数，一般为0.9， 0.99， 0.999
+    running_mean ：滑动平均的方式计算新的均值，训练时计算，为测试数据做准备
+    running_var  : 滑动平均的方式计算新的方差，训练时计算，为测试数据做准备
+"""
+    running_mean = bn_param['running_mean']  #shape = [B]
+    running_var = bn_param['running_var']    #shape = [B]
+    results = 0. # 建立一个新的变量
+
+    x_mean=x.mean(axis=0)  # 计算x的均值
+    x_var=x.var(axis=0)    # 计算方差
+    x_normalized=(x-x_mean)/np.sqrt(x_var+eps)       # 归一化
+    results = gamma * x_normalized + beta            # 缩放平移
+
+    running_mean = momentum * running_mean + (1 - momentum) * x_mean
+    running_var = momentum * running_var + (1 - momentum) * x_var
+
+    #记录新的值
+    bn_param['running_mean'] = running_mean
+    bn_param['running_var'] = running_var
+
+    return results , bn_param
+```
+
+### 初始化是如何缓解梯度消失/梯度爆炸问题的呢？为什么有\(Xavier\)、\(Kaiming\)这样的初始化呢？
+
+> Xavier: bias初始化为 0，为 Normalize 后的参数乘以一个 rescale 系数：$1/\sqrt n$, n 是输入参数的个数
+>
+> Kaiming: 因为 relu 会抛弃掉小于 0 的值，对于一个均值为 0 的 data 来说，这就相当于砍掉了一半的值。这样一来，均值就会变大，前面 Xavier 初始化公式中 E(x) = mean = 0 的情况就不成立了。根据新公式的推导，最终得到新的 rescale 系数：$1 / \sqrt{2/n}$。
+
+我们通常希望网络的输出是一个均值为 $0$ 方差为 $1$ 的标准正态分布 —— 与输入保持一致。对于一个只有卷积或者全连接层构成的线性的神经网络来说，常规做法是使用 Xavier 来归一化权重使得其输出满足正态分布。然而，这个做法在引入了非线性变换的神经网络中效果有限，在 ReLU 激活层出现时更是如此，所以有了 Kaiming。
+
+## 参考链接
+
+- [ResNet面试简介](https://zyc.ai/sketch/career/interview_resnet/#_4)
+- [基础 | batchnorm原理及代码详解](https://www.cnblogs.com/adong7639/p/9145911.html)
+- [一文搞懂深度网络初始化（Xavier and Kaiming initialization）](https://cloud.tencent.com/developer/article/1587082)
