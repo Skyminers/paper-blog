@@ -1,7 +1,7 @@
 ---
 author: Sky_miner
 pubDatetime: 2024-08-01T20:41:09+08:00
-modDatetime: 2024-08-19T10:06:00+08:00
+modDatetime: 2024-08-23T10:34:00+08:00
 title: LeetCode 热题 100 一句话题解集(更新中)
 featured: true
 draft: false
@@ -32,6 +32,44 @@ public:
             mp[nums[i]] = i;
         }
         return {};
+    }
+};
+```
+
+---
+
+## 2. [两数相加](https://leetcode.cn/problems/add-two-numbers/description/?envType=study-plan-v2&envId=top-100-liked)
+
+模拟，为了方便，创建了一个不含数值的头节点来避免判断。
+
+```cpp
+class Solution {
+public:
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        int x = 0;
+        ListNode head = ListNode();
+        ListNode *num = &head;
+        while(l1 != nullptr || l2 != nullptr || x) {
+            num->next = new ListNode();
+            num = num->next;
+
+            num->val = x;
+            if (l1 != nullptr) {
+                num->val += l1->val;
+                l1 = l1->next;
+            }
+            if (l2 != nullptr) {
+                num->val += l2->val;
+                l2 = l2->next;
+            }
+
+            if (num->val >= 10) {
+                x = 1;
+                num->val -= 10;
+            } else x = 0;
+        }
+        num = head.next;
+        return num;
     }
 };
 ```
@@ -177,7 +215,7 @@ public:
 
 ## 15. [三数之和](https://leetcode.cn/problems/3sum/description/?envType=study-plan-v2&envId=top-100-liked)
 
-首先排序，然后枚举三元组的第一个数字，再枚举第二个数字，第三个数字会在第二个数字从前往后枚举的过程中逐渐从后往前移动，维护指针即可。
+首先排序，然后枚举三元组的第一个数字，再枚举第二个数字，第三个数字会在第二个数字从前往后枚举的过程中逐渐从后往前移动，维护指针。
 
 ```cpp
 class Solution {
@@ -217,7 +255,7 @@ public:
 
 ## 17. [电话号码的字母组合](https://leetcode.cn/problems/letter-combinations-of-a-phone-number/?envType=study-plan-v2&envId=top-100-liked)
 
-搜索枚举即可
+搜索枚举
 
 ```cpp
 class Solution {
@@ -284,7 +322,7 @@ public:
 
 ## 20. [有效的括号](https://leetcode.cn/problems/valid-parentheses/description/?envType=study-plan-v2&envId=top-100-liked)
 
-用栈来判断即可。
+用栈来判断。
 
 ```cpp
 class Solution {
@@ -306,6 +344,42 @@ public:
             } else sta.push_back(s[i]);
         }
         return sta.empty();
+    }
+};
+```
+
+---
+
+## 22. [括号生成](https://leetcode.cn/problems/generate-parentheses/description/?envType=study-plan-v2&envId=top-100-liked)
+
+可以用递归来做，做的同时还可以剪枝，会快一些。我为了方便直接写了迭代枚举+判断的方法。
+
+```cpp
+class Solution {
+    bool check(int val, int len, string &ret) {
+        ret = "";
+        int leftNumber = 0;
+        for (int i = 0; i < len; ++ i) {
+            if (val & (1 << i)) {
+                ret += '(';
+                ++ leftNumber;
+            } else {
+                if (leftNumber) --leftNumber;
+                else return false;
+                ret += ')';
+            }
+        }
+        return leftNumber == 0;
+    }
+public:
+    vector<string> generateParenthesis(int n) {
+        vector<string> ans;
+        int len = n << 1;
+        for (int i = 0; i < (1 << len); ++ i) {
+            string ret;
+            if (check(i, len, ret)) ans.push_back(ret);
+        }
+        return ans;
     }
 };
 ```
@@ -423,7 +497,7 @@ public:
 
 ## 33. [搜索旋转排序数组](https://leetcode.cn/problems/search-in-rotated-sorted-array/description/?envType=study-plan-v2&envId=top-100-liked)
 
-通过二分确认分界点，然后进行分别二分查找即可。
+通过二分确认分界点，然后进行分别二分查找。
 
 ```cpp
 class Solution {
@@ -463,7 +537,7 @@ public:
 
 ## 41. [缺失的第一个正数](https://leetcode.cn/problems/first-missing-positive/description/?envType=study-plan-v2&envId=top-100-liked)
 
-利用原本的数组元素存储信息，每次遇到一个下标为 `i` 的数字 `num[i]` 时，通过不断的 `swap` 操作将 `num[i]` 放到正确的位置上，最后再遍历一次数组即可。
+利用原本的数组元素存储信息，每次遇到一个下标为 `i` 的数字 `num[i]` 时，通过不断的 `swap` 操作将 `num[i]` 放到正确的位置上，最后再遍历一次数组。
 
 ```cpp
 class Solution {
@@ -523,9 +597,39 @@ public:
 
 ---
 
+## 45. [跳跃游戏 II](https://leetcode.cn/problems/jump-game-ii/description/?envType=study-plan-v2&envId=top-100-liked)
+
+每次选择跳跃区间内下一步跳的最远的点。迭代跳跃直到达到终点。这份代码其实复杂度有些不对，每次枚举不应该从 `cur` 开始，最好是从上一次的 `jumpRange` 开始，这样才可以避免枚举到相同的元素，但是懒得改了）
+
+```cpp
+class Solution {
+public:
+    int jump(vector<int>& nums) {
+        if (nums.size() <= 1) return 0;
+        int ans = 0, cur = 0, jumpRange = nums[0];
+        while(true) {
+            if (jumpRange >= nums.size()-1) break;
+            int idx = cur;
+            for (int i = cur + 1; i <= jumpRange; ++ i) {
+                if (i + nums[i] > idx + nums[idx]) {
+                    idx = i;
+                }
+            }
+            jumpRange = idx + nums[idx];
+            cur = idx;
+            ans += 1;
+        }
+        ans += 1;
+        return ans;
+    }
+};
+```
+
+---
+
 ## 48. [旋转图像](https://leetcode.cn/problems/rotate-image/description/?envType=study-plan-v2&envId=top-100-liked)
 
-旋转会形成循环链路，通过坐标计算可以计算出四个点的旋转变换关系，然后直接交换即可。注意对于奇数的矩阵来说需要枚举中间行或列来接触到中间的循环节。
+旋转会形成循环链路，通过坐标计算可以计算出四个点的旋转变换关系，然后直接交换。注意对于奇数的矩阵来说需要枚举中间行或列来接触到中间的循环节。
 
 ```cpp
 class Solution {
@@ -549,7 +653,7 @@ public:
 
 ## 49. [字母异位词分组](https://leetcode.cn/problems/group-anagrams/?envType=study-plan-v2&envId=top-100-liked)
 
-将所有字符串排序，此时相等的字符串就是字母异位词，用排序后的字符串作为 key，原字符串作为 value 存入 hashmap 中，最后将 hashmap 中的 value 取出即可。用 C++ 的 `unordered_map` 实现。
+将所有字符串排序，此时相等的字符串就是字母异位词，用排序后的字符串作为 key，原字符串作为 value 存入 hashmap 中，最后将 hashmap 中的 value 取出。用 C++ 的 `unordered_map` 实现。
 
 ```cpp
 class Solution {
@@ -576,7 +680,7 @@ public:
 
 ## 51. [N 皇后](https://leetcode.cn/problems/n-queens/description/?envType=study-plan-v2&envId=top-100-liked)
 
-暴搜即可
+暴搜
 
 ```cpp
 class Solution {
@@ -969,7 +1073,7 @@ public:
 
 ## 79. [单词搜索](https://leetcode.cn/problems/word-search/description/?envType=study-plan-v2&envId=top-100-liked)
 
-直接搜索，记录当前位置匹配到了第几个元素，然后递归搜索即可。
+直接搜索，记录当前位置匹配到了第几个元素，然后递归搜索。
 
 ```cpp
 class Solution {
@@ -1008,6 +1112,45 @@ public:
             }
         }
         return false;
+    }
+};
+```
+
+---
+
+## 84. [柱状图中最大的矩形](https://leetcode.cn/problems/largest-rectangle-in-histogram/description/?envType=study-plan-v2&envId=top-100-liked)
+
+每一个元素 $i$ 向左能扩展的最大长度可以通过一个单调上升的单调栈计算得到，两边单调栈求出每一个元素向左扩展和向右扩展的最大长度，然后计算答案。
+
+```cpp
+class Solution {
+public:
+    int largestRectangleArea(vector<int>& heights) {
+        stack<int> sta;
+        vector<int> left(heights.size()), right(heights.size());
+        for (int i = 0; i < heights.size(); ++ i) {
+            while(!sta.empty() && heights[sta.top()] > heights[i]) sta.pop();
+            if (sta.empty()) left[i] = 0;
+            else {
+                if (heights[sta.top()] == heights[i]) left[i] = left[sta.top()];
+                else left[i] = sta.top() + 1;
+            }
+            sta.push(i);
+        }
+        while(!sta.empty()) sta.pop();
+        int ans = 0;
+        for (int i = heights.size()-1; i >= 0; -- i) {
+            while(!sta.empty() && heights[sta.top()] > heights[i]) sta.pop();
+            if (sta.empty()) right[i] = heights.size()-1;
+            else {
+                if (heights[sta.top()] == heights[i]) right[i] = right[sta.top()];
+                else right[i] = sta.top() - 1;
+            }
+            sta.push(i);
+            ans = max(ans, (i-left[i] + right[i]-i + 1) * heights[i]);
+            sta.push(i);
+        }
+        return ans;
     }
 };
 ```
@@ -1072,6 +1215,77 @@ public:
 
 ---
 
+## 114. [二叉树展开为链表](https://leetcode.cn/problems/flatten-binary-tree-to-linked-list/description/?envType=study-plan-v2&envId=top-100-liked)
+
+可以通过递归的方式来做，每次返回链表的头与尾部。
+
+```cpp
+class Solution {
+    pair<TreeNode*, TreeNode*> dfs(TreeNode *p) {
+        if (p == nullptr) return make_pair(nullptr, nullptr);
+        auto listleft = dfs(p->left);
+        auto listRight = dfs(p->right);
+        p->left = nullptr;
+        if (listleft.first == nullptr) p->right = listRight.first;
+        else {
+            p->right = listleft.first;
+            (listleft.second)->right = listRight.first;
+        }
+        if (p->right == nullptr) return make_pair(p, p);
+        if (listRight.first == nullptr) return make_pair(p, listleft.second);
+        return make_pair(p, listRight.second);
+    }
+public:
+    void flatten(TreeNode* root) {
+        dfs(root);
+    }
+};
+```
+
+看了题解之后发现也可以通过迭代的方式来做，每次将左子树插到右子树中，这种方式要慢一些，但是空间复杂度降为了 $O(1)$。
+
+```cpp
+class Solution {
+public:
+    void flatten(TreeNode* root) {
+        while(root != nullptr) {
+            if (root->left != nullptr) {
+                auto tmp = root->left;
+                while(tmp->right != nullptr) tmp = tmp->right;
+                tmp->right = root->right;
+                root->right = root->left;
+                root->left = nullptr;
+            }
+            root = root->right;
+        }
+    }
+};
+```
+
+---
+
+## 118. [杨辉三角](https://leetcode.cn/problems/pascals-triangle/description/?envType=study-plan-v2&envId=top-100-liked)
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> generate(int numRows) {
+        vector<vector<int>> f(numRows);
+        f[0].push_back(1);
+        for (int i = 1; i < numRows; ++ i) {
+            f[i].resize(i+1);
+            for (int j = 0; j <= i; ++ j) {
+                if (j != i) f[i][j] += f[i-1][j];
+                if (j != 0) f[i][j] += f[i-1][j-1];
+            }
+        }
+        return f;
+    }
+};
+```
+
+---
+
 ## 124. [二叉树中的最大路径和](https://leetcode.cn/problems/binary-tree-maximum-path-sum/description/?envType=study-plan-v2&envId=top-100-liked)
 
 在每个点上计算以这个点为根的子树中端点为根的最大路径，因为是二叉树，所以每次统计答案的时候直接 `left + right` 就是通过根的最大路径。
@@ -1099,7 +1313,7 @@ public:
 
 ## 128. [最长连续序列](https://leetcode.cn/problems/longest-consecutive-sequence/?envType=study-plan-v2&envId=top-100-liked)
 
-将所有数字插入到 HashMap 内后，通过枚举的方式寻找连续段的起点，然后通过循环找到终点即可。
+将所有数字插入到 HashMap 内后，通过枚举的方式寻找连续段的起点，然后通过循环找到终点。
 
 ```cpp
 class Solution {
@@ -1130,7 +1344,7 @@ public:
 
 ## 131. [分割回文串](https://leetcode.cn/problems/palindrome-partitioning/?envType=study-plan-v2&envId=top-100-liked)
 
-搜索枚举即可：
+搜索枚举：
 
 ```cpp
 class Solution {
@@ -1468,6 +1682,27 @@ public:
 
 ---
 
+### 160. [相交链表](https://leetcode.cn/problems/intersection-of-two-linked-lists/description/?envType=study-plan-v2&envId=top-100-liked)
+
+同时开始遍历，较短的一方遍历完之后可以得知长的一条路线比短的要多多少。可以让短的直接从长的头开始遍历，等长的头到终点后前往短的头开始遍历，这样双方会同时抵达。关于不相交的链表：我们可以理解为链表的末尾都连向了 `nullptr`，所以如果两个链表不相交的话最终会在 `nullptr` 相遇。
+
+```cpp
+class Solution {
+public:
+    ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
+        if (headA == nullptr || headB == nullptr) return nullptr;
+        ListNode *pA = headA, *pB = headB;
+        while(pA != pB) {
+            pA = pA == nullptr ? headB : pA->next;
+            pB = pB == nullptr ? headA : pB->next;
+        }
+        return pA;
+    }
+};
+```
+
+---
+
 ## 162. [多数元素](https://leetcode.cn/problems/majority-element/description/?envType=study-plan-v2&envId=top-100-liked)
 
 维护目前的主元素和该元素出现的次数，任意与该元素不同的数字视作**抵消**。
@@ -1510,6 +1745,104 @@ public:
         vector<int> ans;
         dfs(root, 0, ans);
         return ans;
+    }
+};
+```
+
+---
+
+## 200. [岛屿数量](https://leetcode.cn/problems/number-of-islands/description/?envType=study-plan-v2&envId=top-100-liked)
+
+循环遍历，遇到 1 的时候就通过 `dfs` 将所有相连的 1 变为 0。
+
+```cpp
+class Solution {
+    void dfs(int u, int v, vector<vector<char>> &grid) {
+        static int dx[] = {0, 0, 1, -1};
+        static int dy[] = {1, -1, 0, 0};
+        if (u < 0 || v < 0 || u >= grid.size() || v >= grid[0].size()) return ;
+        if (grid[u][v] == '0') return ;
+        grid[u][v] = '0';
+        for (int k = 0; k < 4; ++ k) {
+            int nx = u + dx[k];
+            int ny = v + dy[k];
+            dfs(nx, ny, grid);
+        }
+        return ;
+    }
+public:
+    int numIslands(vector<vector<char>>& grid) {
+        int ans = 0;
+        for (int i = 0; i < grid.size(); ++ i) {
+            for (int j = 0; j < grid[i].size(); ++ j) {
+                if (grid[i][j] == '1') {
+                    ++ ans;
+                    dfs(i, j, grid);
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+
+---
+
+## 206. [反转链表](https://leetcode.cn/problems/reverse-linked-list/description/?envType=study-plan-v2&envId=top-100-liked)
+
+在数组中记录链表元素，然后逆序构造链表指针。
+
+```cpp
+class Solution {
+public:
+    ListNode* reverseList(ListNode* head) {
+        if (head == nullptr) return nullptr;
+        vector<ListNode*> sta;
+        while(head != nullptr) {
+            sta.push_back(head);
+            head = head->next;
+        }
+        for (int i = sta.size()-1; i > 0; -- i) {
+            sta[i]->next = sta[i-1];
+        }
+        sta[0]->next = nullptr;
+        return sta.back();
+    }
+};
+```
+
+---
+
+## 207. [课程表](https://leetcode.cn/problems/course-schedule/description/?envType=study-plan-v2&envId=top-100-liked)
+
+拓扑排序
+
+```cpp
+class Solution {
+public:
+    bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
+        vector<vector<int>>edges(numCourses);
+        vector<int> deg;
+        deg.resize(numCourses);
+        for (auto vec: prerequisites) {
+            int x = vec[0], y = vec[1];
+            edges[x].push_back(y);
+            ++ deg[y];
+        }
+        queue<int> q;
+        for (int i = 0; i < numCourses; ++ i) {
+            if (deg[i] == 0) q.push(i);
+        }
+        while(!q.empty()) {
+            int u = q.front();q.pop();
+            for (auto to: edges[u]) {
+                if (-- deg[to] == 0) q.push(to);
+            }
+        }
+        for (int i = 0; i < numCourses; ++ i) {
+            if (deg[i] != 0) return false;
+        }
+        return true;
     }
 };
 ```
@@ -1603,22 +1936,30 @@ public:
 
 ---
 
+## 226. [翻转二叉树](https://leetcode.cn/problems/invert-binary-tree/description/?envType=study-plan-v2&envId=top-100-liked)
+
+递归翻转左右子树。
+
+```cpp
+class Solution {
+public:
+    TreeNode* invertTree(TreeNode* root) {
+        if (root == nullptr) return nullptr;
+        root->left = invertTree(root->left);
+        root->right = invertTree(root->right);
+        swap(root->left, root->right);
+        return root;
+    }
+};
+```
+
+---
+
 ## 230. [二叉搜索树中第K小的元素](https://leetcode.cn/problems/kth-smallest-element-in-a-bst/description/?envType=study-plan-v2&envId=top-100-liked)
 
-用记忆话的方式计算节点的size，然后在二叉树上二分
+用记忆化的方式计算节点的size，然后在二叉树上二分
 
 ```c++
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
- *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
- *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
- * };
- */
 class Solution {
 public:
     unordered_map<TreeNode*, int> siz;
@@ -1748,9 +2089,31 @@ impl Solution {
 
 ---
 
+## 240. [搜索二维矩阵 II](https://leetcode.cn/problems/search-a-2d-matrix-ii/description/?envType=study-plan-v2&envId=top-100-liked)
+
+从右上角开始搜索，如果 `target` 大于当前数字，则可以确定当前这一行都不会成为答案，可以向下走一步。如果 `target` 小于当前数字，则可以确定当前这一列都不会成为答案，可以向左走一步。时间复杂度 $O(n)$
+
+```cpp
+class Solution {
+public:
+    bool searchMatrix(vector<vector<int>>& matrix, int target) {
+        if (matrix.size() == 0) return false;
+        int x = 0, y = matrix[0].size() - 1;
+        while(matrix[x][y] != target) {
+            if (target > matrix[x][y]) ++ x;
+            else if (target < matrix[x][y]) -- y;
+            if (x >= matrix.size() || y < 0) return false;
+        }
+        return true;
+    }
+};
+```
+
+---
+
 ## 279. [完全平方数](https://leetcode.cn/problems/perfect-squares/description/?envType=study-plan-v2&envId=top-100-liked)
 
-这个题动态规划，设`f[i]`表示和为 $i$ 的最少数量，然后枚举完全平方数 DP 即可。但是题解貌似用的是什么四平方数的数学定理，没太看懂）
+这个题动态规划，设`f[i]`表示和为 $i$ 的最少数量，然后枚举完全平方数 DP 。但是题解貌似用的是什么四平方数的数学定理，没太看懂）
 
 ```cpp
 class Solution {
@@ -1803,7 +2166,7 @@ public:
 
 ## 300. [最长递增子序列](https://leetcode.cn/problems/longest-increasing-subsequence/description/?envType=study-plan-v2&envId=top-100-liked)
 
-树状数组加速动态规划即可，动态保存权值的前缀区间内最大的数字是多少。
+树状数组加速动态规划，动态保存权值的前缀区间内最大的数字是多少。
 
 ```cpp
 #define lowbit(x) (x&(-x))
@@ -1937,7 +2300,7 @@ public:
 
 ## 438. [找到字符串中所有字母异位词](https://leetcode.cn/problems/find-all-anagrams-in-a-string/description/?envType=study-plan-v2&envId=top-100-liked)
 
-用桶来统计每一个字符出现的次数，然后滑动窗口不断维护窗口内的字符出现次数，维护匹配即可。
+用桶来统计每一个字符出现的次数，然后滑动窗口不断维护窗口内的字符出现次数，维护匹配。
 
 ```cpp
 class Solution {
@@ -1985,7 +2348,7 @@ public:
 
 ## 560. [和为 K 的子数组](https://leetcode.cn/problems/subarray-sum-equals-k/?envType=study-plan-v2&envId=top-100-liked)
 
-数组和就是前缀和相减，用 hashmap 维护某个前缀数值出现的次数即可。
+数组和就是前缀和相减，用 hashmap 维护某个前缀数值出现的次数。
 
 ```cpp
 class Solution {
@@ -2000,6 +2363,40 @@ public:
             hash[sum] += 1;
         }
         return ans;
+    }
+};
+```
+
+---
+
+## 763. [划分字母区间](https://leetcode.cn/problems/partition-labels/description/?envType=study-plan-v2&envId=top-100-liked)
+
+计算出每个字母最后一次出现的位置，然后相当于区间覆盖问题了，从左到右依次枚举并维护右端点。
+
+```cpp
+class Solution {
+public:
+    vector<int> partitionLabels(string s) {
+        static int last[26];
+        memset(last, -1, sizeof last);
+        vector<int> end(s.size());
+        for (int i = s.size() - 1; i >= 0; -- i) {
+            if (last[s[i] - 'a'] == -1) last[s[i] - 'a'] = i;
+            end[i] = last[s[i] - 'a'];
+        }
+        vector<int> split;
+        int ans = 0, r = -1, lastIdx = 0;
+        for (int i = 0;i < s.size(); ++ i) {
+            if (r < i) {
+                ++ ans;
+                int len = i - lastIdx;
+                if (len != 0) split.push_back(len);
+                lastIdx = i;
+                r = end[i];
+            } else r = max(r, end[i]);
+        }
+        split.push_back(s.size() - lastIdx);
+        return split;
     }
 };
 ```
