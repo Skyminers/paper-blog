@@ -1,8 +1,8 @@
 ---
 author: Sky_miner
 pubDatetime: 2024-08-01T20:41:09+08:00
-modDatetime: 2024-08-26T19:26:00+08:00
-title: LeetCode 热题 100 一句话题解集(更新中)
+modDatetime: 2024-08-26T21:26:00+08:00
+title: LeetCode 热题 100 全部题目一句话题解
 featured: true
 draft: false
 tags:
@@ -519,6 +519,28 @@ public:
 
 ---
 
+## 31. [下一个排列](https://leetcode.cn/problems/next-permutation/description/?envType=study-plan-v2&envId=top-100-liked)
+
+从后往前找到第一个非降序的数字，然后将这个数字与后面的数字中第一个比它大的数字交换，然后将后面的数字翻转（调为正序）。
+
+```cpp
+class Solution {
+public:
+    void nextPermutation(vector<int>& nums) {
+        int i = nums.size() - 2;
+        while(i >= 0 && nums[i] >= nums[i+1]) -- i;
+        if (i >= 0) {
+            int j = nums.size() - 1;
+            while(j >= 0 && nums[i] >= nums[j]) -- j;
+            swap(nums[i], nums[j]);
+        }
+        reverse(nums.begin() + i + 1, nums.end());
+    }
+};
+```
+
+---
+
 ## 32. [最长有效括号](https://leetcode.cn/problems/longest-valid-parentheses/description/?envType=study-plan-v2&envId=top-100-liked)
 
 栈求解括号序列，用栈维护每一个左括号的位置，通过记录`f[i]`表示以第 `i` 个字符结尾的最长有效括号的长度。
@@ -585,6 +607,69 @@ public:
         int y = binary_search(nums, ans, nums.size()-1, target);
         if (x == -1 && y == -1) return -1;
         return x == -1 ? y : x;
+    }
+};
+```
+
+---
+
+## 34. [在排序数组中查找元素的第一个和最后一个位置](https://leetcode.cn/problems/find-first-and-last-position-of-element-in-sorted-array/description/?envType=study-plan-v2&envId=top-100-liked)
+
+`upper_bound` 大法好。
+
+```cpp
+class Solution {
+public:
+    vector<int> searchRange(vector<int>& nums, int target) {
+        int p = upper_bound(nums.begin(), nums.end(), target-1) - nums.begin();
+        int q = upper_bound(nums.begin(), nums.end(), target) - nums.begin();
+        if (p == q) return vector<int>(2, -1);
+        return vector<int>({p, q-1});
+    }
+};
+```
+
+---
+
+## 35. [搜索插入位置](https://leetcode.cn/problems/search-insert-position/description/?envType=study-plan-v2&envId=top-100-liked)
+
+`lower_bound` 大法好。
+
+```cpp
+class Solution {
+public:
+    int searchInsert(vector<int>& nums, int target) {
+        return lower_bound(nums.begin(), nums.end(), target) - nums.begin();
+    }
+};
+```
+
+---
+
+## 39. [组合总和](https://leetcode.cn/problems/combination-sum/description/?envType=study-plan-v2&envId=top-100-liked)
+
+递归暴搜，因为要输出答案。
+
+```cpp
+class Solution {
+    vector<vector<int>> ans;
+    vector<int> ret;
+    void dfs(vector<int> &vec, int idx, int val) {
+        if (val == 0) { ans.push_back(ret); return; }
+        if (idx >= vec.size()) return;
+        dfs(vec, idx+1, val);
+        int cnt = 1;
+        for (; val - cnt*vec[idx] >= 0; ++ cnt) {
+            ret.push_back(vec[idx]);
+            dfs(vec, idx+1, val - cnt*vec[idx]);
+        }
+        while(--cnt) ret.pop_back();
+    }
+public:
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        ans.clear();
+        dfs(candidates, 0, target);
+        return ans;
     }
 };
 ```
@@ -885,6 +970,25 @@ public:
 
 ---
 
+## 55. [跳跃游戏](https://leetcode.cn/problems/jump-game/description/?envType=study-plan-v2&envId=top-100-liked)
+
+维护可以跳到的最远的点。
+
+```cpp
+class Solution {
+public:
+    bool canJump(vector<int>& nums) {
+        if (nums.size() <= 1) return true;
+        for (int i = 0, idx = 0; i < nums.size() && i <= idx; ++ i) {
+            while(idx < i + nums[i]) if (++idx >= nums.size()-1) return true;
+        }
+        return false;
+    }
+};
+```
+
+---
+
 ## 56. [合并区间](https://leetcode.cn/problems/merge-intervals/description/?envType=study-plan-v2&envId=top-100-liked)
 
 按照左端点排序后线形扫一遍并进行合并
@@ -1058,6 +1162,28 @@ public:
         }
         if (line0) for(int i = 0; i < matrix[0].size(); ++ i) matrix[0][i] = 0;
         if (col0) for(int i = 0; i < matrix.size(); ++ i) matrix[i][0] = 0;
+    }
+};
+```
+
+---
+
+## 74. [搜索二维矩阵](https://leetcode.cn/problems/search-a-2d-matrix/description/?envType=study-plan-v2&envId=top-100-liked)
+
+突出一个，懒得写二分）先用一次二分确定行坐标，再用一次二分确定列坐标。
+
+```cpp
+class Solution {
+public:
+    bool searchMatrix(vector<vector<int>>& matrix, int target) {
+        int p = lower_bound(matrix.begin(), matrix.end(), vector<int>(1, target)) - matrix.begin();
+
+        if (p < matrix.size() && matrix[p][0] == target) return true;
+        if (-- p < 0) return false;
+
+        auto it = lower_bound(matrix[p].begin(), matrix[p].end(), target);
+        if (it == matrix[p].end()) return false;
+        return *it == target;
     }
 };
 ```
@@ -1678,6 +1804,31 @@ public:
 
 ---
 
+## 141. [环形链表](https://leetcode.cn/problems/linked-list-cycle/description/?envType=study-plan-v2&envId=top-100-liked)
+
+我居然先做的*环形链表 II*。
+
+```cpp
+class Solution {
+#define next(x) \
+    if((x)->next == nullptr) return false; \
+    else (x) = (x)->next
+public:
+    bool hasCycle(ListNode *head) {
+        if (head == nullptr) return false;
+        ListNode *p = head, *q = head;
+        while(true) {
+            next(p);
+            next(q);next(q);
+            if (p == q) return true;
+        }
+    }
+#undef next(x)
+};
+```
+
+---
+
 ## 143. [环形链表 II](https://leetcode.cn/problems/linked-list-cycle-ii/description/?envType=study-plan-v2&envId=top-100-liked)
 
 首先在 Head 定义快慢两个指针，快指针每次移动 $2$，慢指针每次移动 $1$。如果我们设 $L$ 表示入口点到入环点的距离，$R$ 表示环的长度，那么我们可以计算出慢指针到达入环点时快指针位于环上距离入环点 $L$ 的位置，所以再经过 $(R-L)$ 步就会到达相遇点，所以相遇点位于环上距离入环点 $(R-L)$ 步的位置。
@@ -1803,6 +1954,59 @@ public:
         return ret;
     }
 
+};
+```
+
+---
+
+## 148. [排序链表](https://leetcode.cn/problems/sort-list/description/?envType=study-plan-v2&envId=top-100-liked)
+
+归并排序，通过大步小步算法找到链表的中间点，然后划分为两段进行归并排序。
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* sortList(ListNode* head) {
+        if (head == nullptr) return nullptr;
+        if (head->next == nullptr) return head;
+        ListNode *p = head, *q = head->next;
+        while(q != nullptr) {
+            q = q->next; if (q == nullptr) break;
+            q = q->next;
+            p = p->next;
+        }
+        ListNode *list1 = sortList(p->next); p->next = nullptr;
+        ListNode *list2 = sortList(head);
+        ListNode preHead; head = &preHead;
+        while(list1 != nullptr && list2 != nullptr) {
+            if (list1->val < list2->val) {
+                head->next = list1;
+                list1 = list1->next;
+                head = head->next;
+            } else {
+                head->next = list2;
+                list2 = list2->next;
+                head = head->next;
+            }
+        }
+        while(list1 != nullptr) {
+            head->next = list1; list1 = list1->next; head = head->next;
+        }
+        while(list2 != nullptr) {
+            head->next = list2; list2 = list2->next; head = head->next;
+        }
+        return preHead.next;
+    }
 };
 ```
 
@@ -1947,6 +2151,24 @@ public:
             } else ++ cnt;
         }
         return value;
+    }
+};
+```
+
+---
+
+## 189. [轮转数组](https://leetcode.cn/problems/rotate-array/description/)
+
+十分有想象力的做法：先整体翻转，再分两部分翻转回来。
+
+```cpp
+class Solution {
+public:
+    void rotate(vector<int>& nums, int k) {
+        k %= nums.size();
+        reverse(nums.begin(), nums.end());
+        reverse(nums.begin(), nums.begin() + k);
+        reverse(nums.begin()+k, nums.end());
     }
 };
 ```
@@ -2473,6 +2695,28 @@ public:
 
 ---
 
+## 322. [零钱兑换](https://leetcode.cn/problems/coin-change/description/?envType=study-plan-v2&envId=top-100-liked)
+
+动态规划，`f[i]` 表示兑换 `i` 元的最少硬币数量。
+
+```cpp
+class Solution {
+public:
+    int coinChange(vector<int>& coins, int amount) {
+        vector<int> f(amount + 1, 0x3fffffff);
+        f[0] = 0;
+        for (auto coin: coins) {
+            for (int i = coin; i <= amount; ++ i) {
+                f[i] = min(f[i], f[i - coin] + 1);
+            }
+        }
+        return f[amount] == 0x3fffffff ? -1 : f[amount];
+    }
+};
+```
+
+---
+
 ## 347. [前 K 个高频元素](https://leetcode.cn/problems/top-k-frequent-elements/description/?envType=study-plan-v2&envId=top-100-liked)
 
 用 HashMap 计算出每个数字出现的次数，然后用桶排序可以将复杂度控制到 $O(n)$
@@ -2698,6 +2942,31 @@ public:
             sum += x;
             ans += hash[sum - k];
             hash[sum] += 1;
+        }
+        return ans;
+    }
+};
+```
+
+---
+
+## 739. [每日温度](https://leetcode.cn/problems/daily-temperatures/description/?envType=study-plan-v2&envId=top-100-liked)
+
+倒序枚举，维护一个单调下降的单调栈，这样就可以快速对每个数字都快速找到之前出现的数字中第一个大于该数字的数字。
+
+```cpp
+class Solution {
+public:
+    vector<int> dailyTemperatures(vector<int>& temperatures) {
+        stack<int> minStack;
+        vector<int> ans(temperatures.size());
+        for (int i = temperatures.size()-1; i >= 0; -- i) {
+            while (!minStack.empty() &&
+            temperatures[minStack.top()] <= temperatures[i]) {
+                minStack.pop();
+            }
+            if (!minStack.empty()) ans[i] = minStack.top() - i;
+            minStack.push(i);
         }
         return ans;
     }
