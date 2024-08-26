@@ -7,7 +7,7 @@ export const SITE: Site = {
   author: "Sky_miner",
   profile: "https://satnaing.dev/",
   desc: "A minimal, responsive and SEO-friendly Astro blog theme.",
-  title: "SkyBlog",
+  title: "Sky_miner",
   ogImage: "astropaper-og.jpg",
   lightAndDarkMode: true,
   postPerIndex: 4,
