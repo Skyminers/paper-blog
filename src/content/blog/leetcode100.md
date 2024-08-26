@@ -1,7 +1,7 @@
 ---
 author: Sky_miner
 pubDatetime: 2024-08-01T20:41:09+08:00
-modDatetime: 2024-08-23T10:34:00+08:00
+modDatetime: 2024-08-26T19:26:00+08:00
 title: LeetCode 热题 100 一句话题解集(更新中)
 featured: true
 draft: false
@@ -350,6 +350,35 @@ public:
 
 ---
 
+## 21. [合并两个有序链表](https://leetcode.cn/problems/merge-two-sorted-lists/description/?envType=study-plan-v2&envId=top-100-liked)
+
+直接合并
+
+```cpp
+class Solution {
+public:
+    ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {
+        ListNode head, *p = &head;
+        while(list1 != nullptr && list2 != nullptr) {
+            if (list1->val < list2->val) {
+                p->next = list1;
+                p = p->next;
+                list1 = list1->next;
+            } else {
+                p->next = list2;
+                p = p->next;
+                list2 = list2->next;
+            }
+        }
+        while(list1 != nullptr) p->next = list1, p = p->next, list1 = list1->next;
+        while(list2 != nullptr) p->next = list2, p = p->next, list2 = list2->next;
+        return head.next;
+    }
+};
+```
+
+---
+
 ## 22. [括号生成](https://leetcode.cn/problems/generate-parentheses/description/?envType=study-plan-v2&envId=top-100-liked)
 
 可以用递归来做，做的同时还可以剪枝，会快一些。我为了方便直接写了迭代枚举+判断的方法。
@@ -419,6 +448,33 @@ public:
             }
         }
         return head;
+    }
+};
+```
+
+---
+
+## 24. [两两交换链表中的节点](https://leetcode.cn/problems/swap-nodes-in-pairs/description/?envType=study-plan-v2&envId=top-100-liked)
+
+创建一个 `preHead` 作为头节点，来方便后续的判断。
+
+```cpp
+class Solution {
+public:
+    ListNode* swapPairs(ListNode* head) {
+        ListNode *p, *q;
+        ListNode preHead; preHead.next = head;
+        if (head == nullptr || head->next == nullptr) return head;
+        p = &preHead;
+        while(p->next != nullptr && p->next->next != nullptr) {
+            q = p->next;
+            ListNode *x = q->next;
+            p->next = x;
+            q->next = x->next;
+            x->next = q;
+            p = q;
+        }
+        return preHead.next;
     }
 };
 ```
@@ -620,6 +676,42 @@ public:
             ans += 1;
         }
         ans += 1;
+        return ans;
+    }
+};
+```
+
+---
+
+## 46. [全排列](https://leetcode.cn/problems/permutations/?envType=study-plan-v2&envId=top-100-liked)
+
+不断求下一个排列，直到得到本身。
+
+如何求下一个排列：从后往前找到第一个不是递增的数字，然后将该数字后面的数字翻转。再从当前数字开始向后枚举找到第一个大于该数字的数字，交换两个数字的位置，就可以求出下一个排列。
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> permute(vector<int>& nums) {
+        vector<vector<int>> ans; ans.push_back(nums);
+        vector<int> origin = nums;
+        while(true) {
+            int p = -1;
+            for (int i = nums.size() - 2; i >= 0; -- i) {
+                if (nums[i] < nums[i+1]) {
+                    p = i; break;
+                }
+            }
+            reverse(nums.begin()+p+1, nums.end());
+            if (p != -1) for (int i = p+1; i < nums.size(); ++ i) {
+                if (nums[p] < nums[i]) {
+                    swap(nums[p], nums[i]);
+                    break;
+                }
+            }
+            if (nums == origin) break;
+            ans.push_back(nums);
+        }
         return ans;
     }
 };
@@ -1157,6 +1249,118 @@ public:
 
 ---
 
+## 94. [二叉树的中序遍历](https://leetcode.cn/problems/binary-tree-inorder-traversal/description/?envType=study-plan-v2&envId=top-100-liked)
+
+```cpp
+class Solution {
+    void dfs(TreeNode *root, vector<int> &ans) {
+        if (root == nullptr) return ;
+        dfs(root->left, ans);
+        ans.push_back(root->val);
+        dfs(root->right, ans);
+        return ;
+    }
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> ans;
+        dfs(root, ans);
+        return ans;
+    }
+};
+```
+
+---
+
+## 98. [验证二叉搜索树](https://leetcode.cn/problems/validate-binary-search-tree/description/?envType=study-plan-v2&envId=top-100-liked)
+
+卡 `INT_MAX` 很有意思吗？
+
+```cpp
+class Solution {
+    bool dfs(TreeNode *root, long long minVal, long long maxVal) {
+        if (root == nullptr) return true;
+        if (root->val <= minVal || root->val >= maxVal) return false;
+        return dfs(root->left, minVal, root->val) && dfs(root->right, root->val, maxVal);
+    }
+public:
+    bool isValidBST(TreeNode* root) {
+        return dfs(root, -(1LL<<60), (1LL<<60));
+    }
+};
+```
+
+---
+
+## 101. [对称二叉树](https://leetcode.cn/problems/symmetric-tree/description/?envType=study-plan-v2&envId=top-100-liked)
+
+递归判断左右子树是否对称。
+
+```cpp
+class Solution {
+    bool check(TreeNode *p, TreeNode *q) {
+        if (p == nullptr && q == nullptr) return true;
+        if (p == nullptr || q == nullptr) return false;
+        if (p->val != q->val) return false;
+        return check(p->left, q->right) && check(p->right, q->left);
+    }
+public:
+    bool isSymmetric(TreeNode* root) {
+        TreeNode *p = root, *q = root;
+        return check(p, q);
+    }
+};
+```
+
+---
+
+## 102. [二叉树的层序遍历](https://leetcode.cn/problems/binary-tree-level-order-traversal/description/?envType=study-plan-v2&envId=top-100-liked)
+
+BFS + 守卫节点
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        vector<vector<int>> ans;
+        if (root == nullptr) return ans;
+        queue<TreeNode*> que; que.push(root); que.push(nullptr);
+        vector<int> ret;
+        while(!que.empty()) {
+            TreeNode *p = que.front(); que.pop();
+            if (p == nullptr) {
+                ans.push_back(ret);
+                ret.clear();
+                if (que.empty()) break;
+                else {
+                    que.push(nullptr);
+                    continue;
+                }
+            }
+            ret.push_back(p->val);
+            if (p->left != nullptr) que.push(p->left);
+            if (p->right!= nullptr) que.push(p->right);
+        }
+        return ans;
+    }
+};
+```
+
+---
+
+## 104. [二叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-binary-tree/description/?envType=study-plan-v2&envId=top-100-liked)
+
+```cpp
+class Solution {
+public:
+    int maxDepth(TreeNode* root) {
+        if (root == nullptr) return 0;
+        return max(maxDepth(root->left), maxDepth(root->right)) + 1;
+    }
+};
+```
+
+---
+
 ## 105. [从前序与中序遍历序列构造二叉树](https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/description/?envType=study-plan-v2&envId=top-100-liked)
 
 以前序遍历为主，每次找到当前位置在中序遍历中出现的位置来将问题划分为两个子问题。
@@ -1280,6 +1484,27 @@ public:
             }
         }
         return f;
+    }
+};
+```
+
+---
+
+## 121. [买卖股票的最佳时机](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/description/?envType=study-plan-v2&envId=top-100-liked)
+
+记录过去最低的买入价格。
+
+```cpp
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        if (prices.size() <= 1) return 0;
+        int minVal = prices[0], ans = 0;
+        for (int i = 1;i < prices.size(); ++ i) {
+            if (prices[i] > minVal) ans = max(ans, prices[i] - minVal);
+            else minVal = prices[i];
+        }
+        return ans;
     }
 };
 ```
@@ -1728,6 +1953,28 @@ public:
 
 ---
 
+## 198. [打家劫舍](https://leetcode.cn/problems/house-robber/description/?envType=study-plan-v2&envId=top-100-liked)
+
+动态规划，`f[i]` 表示前 `i` 个房子能够获得的最大收益。
+
+```cpp
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        vector<int> f(nums.size());
+        if (nums.empty()) return 0;
+        if (nums.size() == 1) return nums[0];
+        f[0] = nums[0]; f[1] = max(nums[1], nums[0]);
+        for (int i = 2; i < nums.size(); ++ i) {
+            f[i] = max(f[i-2] + nums[i], f[i-1]);
+        }
+        return f.back();
+    }
+};
+```
+
+---
+
 ## 199. [二叉树的右视图](https://leetcode.cn/problems/binary-tree-right-side-view/description/?envType=study-plan-v2&envId=top-100-liked)
 
 如果我们每次都先递归搜索右子树，那么每个深度中第一个被访问的点就是被看到的点。
@@ -1979,6 +2226,30 @@ public:
             k -= get_size(root->left) + 1;
             return kthSmallest(root->right, k);
         } else return kthSmallest(root->left, k);
+    }
+};
+```
+
+---
+
+## 234. [回文链表](https://leetcode.cn/problems/palindrome-linked-list/description/?envType=study-plan-v2&envId=top-100-liked)
+
+进阶要求的话可以通过快慢指针找到中点，然后将后半部分翻转。但是这里就直接写了 copy 到数组中的版本。以及这个题其实可以用 SAM 做到 $O(1)$ 的时间复杂度。
+
+```cpp
+class Solution {
+public:
+    bool isPalindrome(ListNode* head) {
+        if (head == nullptr) return true;
+        vector<int> vec;
+        while(head != nullptr) {
+            vec.push_back(head->val);
+            head = head->next;
+        }
+        for (int i = 0, j = vec.size()-1; i < j; ++ i, -- j) {
+            if (vec[i] != vec[j]) return false;
+        }
+        return true;
     }
 };
 ```
@@ -2240,6 +2511,48 @@ public:
 
 ---
 
+## 394. [字符串解码](https://leetcode.cn/problems/decode-string/description/?envType=study-plan-v2&envId=top-100-liked)
+
+丑陋！这段代码只能用丑陋来形容！
+
+我怎么会写出如此丑陋的代码？括号序列+字符串处理真是难搞。
+
+```cpp
+class Solution {
+public:
+    string decodeString(string s) {
+        string ans = "";
+        stack<string> charStack;
+        stack<int> numberStack;
+        for (int i = 0; i < s.size(); ++ i) {
+            if (s[i] == ']') {
+                string ret = "";
+                while(charStack.top() != "[") {
+                    ret = charStack.top() + ret;
+                    charStack.pop();
+                }
+                charStack.pop();
+                for (int i = 0; i < numberStack.top(); ++ i) {
+                    charStack.push(ret);
+                }
+                numberStack.pop();
+            } else if (s[i] <= '9' && s[i] >= '0') {
+                int x = s[i] - '0';
+                while(s[i+1] <= '9' && s[i+1] >= '0') x = s[++i] - '0' + 10*x;
+                numberStack.push(x);
+            } else charStack.push(string(1, s[i]));
+        }
+        while(!charStack.empty()) {
+            ans = charStack.top() + ans;
+            charStack.pop();
+        }
+        return ans;
+    }
+};
+```
+
+---
+
 ## 416. [分割等和子集](https://leetcode.cn/problems/partition-equal-subset-sum/description/?envType=study-plan-v2&envId=top-100-liked)
 
 背包
@@ -2346,6 +2659,30 @@ public:
 
 ---
 
+## 543. [二叉树的直径](https://leetcode.cn/problems/diameter-of-binary-tree/description/?envType=study-plan-v2&envId=top-100-liked)
+
+通过 dfs 计算出每一个点向下延伸的最大长度。
+
+```cpp
+class Solution {
+    int dfs(TreeNode *root, int &ans) {
+        if (root == nullptr) return -1;
+        int left = dfs(root->left, ans) + 1;
+        int right = dfs(root->right, ans) + 1;
+        ans = max(ans, left + right);
+        return max(left, right);
+    }
+public:
+    int diameterOfBinaryTree(TreeNode* root) {
+        int ans = 0;
+        dfs(root, ans);
+        return ans;
+    }
+};
+```
+
+---
+
 ## 560. [和为 K 的子数组](https://leetcode.cn/problems/subarray-sum-equals-k/?envType=study-plan-v2&envId=top-100-liked)
 
 数组和就是前缀和相减，用 hashmap 维护某个前缀数值出现的次数。
@@ -2445,6 +2782,28 @@ public:
             }
         }
         return freshNumber == 0 ? timeCounter : -1;
+    }
+};
+```
+
+---
+
+## 1143. [最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/description/?envType=study-plan-v2&envId=top-100-liked)
+
+$f[i][j] = \max\{f[i-1][j], f[i][j-1], [s_i == s_j](f[i-1][j-1]+1)\}$
+
+```cpp
+class Solution {
+public:
+    int longestCommonSubsequence(string text1, string text2) {
+        vector<vector<int>> f(text1.size()+1, vector<int>(text2.size()+1));
+        for (int i = 1; i <= text1.size(); ++ i) {
+            for (int j = 1; j <= text2.size(); ++ j) {
+                if (text1[i-1] == text2[j-1]) f[i][j] = f[i-1][j-1] + 1;
+                else f[i][j] = max(f[i-1][j], f[i][j-1]);
+            }
+        }
+        return f[text1.size()][text2.size()];
     }
 };
 ```
