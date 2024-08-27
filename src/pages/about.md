@@ -3,7 +3,7 @@ layout: ../layouts/AboutLayout.astro
 title: "About"
 ---
 
-你好，我是 Sky_miner。一个普普通通的 CS 学生，喜欢折腾各种东西。这个博客是我用来记录一些技术和生活的地方。欢迎来到我的博客。
+你好，我是 Sky_miner。一个普普通通的 CS 学生，喜欢折腾各种东西。这个博客是我用来记录一些技术和生活的地方。欢迎来到我的新博客，之前的博客在[博客园](https://cnblogs.com/Skyminer)，不再更新。
 
 ## 关于这个博客
 
